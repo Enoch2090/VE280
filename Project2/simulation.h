@@ -1,15 +1,22 @@
 /*
  * This is VE280 Project 2, SU2020.
  * Written by Ziqiao Ma and Zhuoer Zhu.
- * Latest Update: 5/23/2020.
+ * Latest Update: 5/29/2020.
  * All rights reserved.
  */
 
 #include "server_type.h"
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
 
 // TODO: Declare your functions in this header file.
 // Hint: You may need these request handling functions.
 
+/* Simulation Process Functions */
+void simulation(const char *userpath, const char *logpath);
+User_list *getUsers(const char *fpath);
 /*
 void visit(...);
 void trending(...);
@@ -26,8 +33,10 @@ void unpost(...);
 
 /* Helper Functions */
 
-// Printing
-void printUser(User_t& user, const string& relationship);
-void printPost(Post_t& post);
-void printTag(const Tag_t& tag, unsigned int rank);
+// File Handling
+ifstream openFile(const char *fpath);
 
+// Printing
+void printUser(User_t &user, const string &relationship);
+void printPost(Post_t &post);
+void printTag(const Tag_t &tag, unsigned int rank);

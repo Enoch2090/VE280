@@ -1,7 +1,7 @@
 /*
  * This is VE280 Project 2, SU2020.
  * Written by Ziqiao Ma and Zhuoer Zhu.
- * Latest Update: 5/23/2020.
+ * Latest Update: 5/29/2020.
  * All rights reserved.
  */
 
@@ -11,7 +11,6 @@
 #include <string>
 
 using namespace std;
-
 
 /* Constants */
 // Max number of users in the server
@@ -26,31 +25,35 @@ const unsigned int MAX_FOLLOWING = 20;
 // Max number of posts per user
 const unsigned int MAX_POSTS = 50;
 
+// Max number of likes per post
+const unsigned int MAX_LIKES = 20;
+
 // Max number of comments per post
 const unsigned int MAX_COMMENTS = 50;
 
 // Max number of tags per post
 const unsigned int MAX_TAGS = 5;
 
-
 /* Exception */
-enum Error_t {
+enum Error_t
+{
     INVALID_ARGUMENT,
     FILE_MISSING,
     CAPACITY_OVERFLOW,
     INVALID_LOG,
 };
 
-struct Exception_t: public exception{
+struct Exception_t : public exception
+{
     Error_t error;
     string error_info;
 
-    Exception_t(Error_t err, const string& info){
+    Exception_t(Error_t err, const string &info)
+    {
         this->error = err;
         this->error_info = info;
     }
 };
-
 
 /* Compound Types Declaration */
 struct Comment_t;
@@ -59,7 +62,6 @@ struct Post_t;
 struct User_t;
 
 /* TODO: Declare any additional compound types here */
-
 
 /* Compound Types Definition */
 struct Comment_t
@@ -76,7 +78,6 @@ struct Comment_t
     User_t *user;
 };
 
-
 struct Tag_t
 /*
 // Type: Tag_t
@@ -85,15 +86,11 @@ struct Tag_t
 // It consists of:
 // * tag_content: the content of the tag
 // * tag_score: the score of the tag used to determine the trend
-// COMMENT: can either use num_relatedPost or score to detect whether it's last tag in the post of this server
-// * num_relatedPost: the number of the post this tag related to
 */
 {
     string tag_content;
     unsigned int tag_score;
-    unsigned int num_relatedPost;
 };
-
 
 struct Post_t
 /*
@@ -103,7 +100,7 @@ struct Post_t
 // It consists of:
 // * comments: An array of comments
 // * like_users: An array of pointers to the users who like this post
-// * tagContents: An array of tag contents of this post
+// * tags: An array of tag contents of this post
 // * owner: A pointer to the post owner
 // * title: the title of the post
 // * text: the text of the post
@@ -112,16 +109,15 @@ struct Post_t
 */
 {
     Comment_t comments[MAX_COMMENTS];
-    User_t *like_users[MAX_USERS];
-    string tagContents[MAX_TAGS];
+    User_t *like_users[MAX_LIKES];
+    string tags[MAX_TAGS];
     User_t *owner;
     string title;
     string text;
     unsigned int num_likes;
     unsigned int num_comments;
-    unsigned int num_tag;
+    unsigned int num_tags;
 };
-
 
 struct User_t
 /*
@@ -147,15 +143,32 @@ struct User_t
     unsigned int num_followers;
 };
 
-
-/* TODO: Define any additional compound types here */
-// Hint: You might find a program driving structure "Server_t" useful.
-
+struct User_list
 /*
-struct Server_t
-{
-    ...
-};
+// Type: User_list
+// ------------------
+// Used to pass a list of usernames.
+// * size: The size of the list
+// * users: The list of usernames.
 */
+{
+    int size;
+    string **username;
+    //TODO: destruction of struct
+};
+
+struct Server_t
+/*
+// Type: Server_t
+// ------------------
+// The type Server_t is used to represent the server.
+// It consists of:
+// * users: An array of users
+// * num_users: the number of users
+*/
+{
+    User_t *users[MAX_USERS];
+    unsigned int num_users;
+};
 
 #endif // SERVER_TYPE_H

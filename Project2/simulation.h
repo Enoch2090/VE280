@@ -14,9 +14,11 @@
 // TODO: Declare your functions in this header file.
 // Hint: You may need these request handling functions.
 
-/* Simulation Process Functions */
+/* Simulation Processing Functions */
 void simulation(const char *userpath, const char *logpath);
-User_list *getUsers(const char *fpath);
+Server_t *serverInit(const char *fpath);
+void readUserInfo(Server_t *server);
+
 /*
 void visit(...);
 void trending(...);
@@ -32,9 +34,15 @@ void unpost(...);
 */
 
 /* Helper Functions */
+// Data Handling
+User_t *findUser(const string username, const Server_t *server);
 
 // File Handling
-ifstream openFile(const char *fpath);
+
+// Error Handling
+
+void checkFileValidity(ifstream &file, const char *fpath);
+void checkCapacity(unsigned int in_capacity, string capacityObject, string errorObject_name);
 
 // Printing
 void printUser(User_t &user, const string &relationship);

@@ -41,6 +41,44 @@ void simulation(const char *userpath, const char *logpath)
             cout << "------------" << endl;
         }
     }
+    cout << "-+-+-+-+-+-+-+-+-" << endl;
+    for (unsigned int i = 0; i < server->num_users; i++) // XXX: CONSOLE
+    {
+        if (server->users[i]->num_posts > 0)
+        {
+            cout << server->users[i]->username << " posts:" << endl;
+            cout << server->users[i]->num_posts << endl;
+            for (unsigned int j = 0; j < server->users[i]->num_posts; j++)
+            {
+                cout << "Tags: ";
+                for (unsigned int k = 0; k < server->users[i]->posts[j].num_tags; k++)
+                {
+                    cout << server->users[i]->posts[j].tags[k] << " ";
+                }
+                cout << endl;
+                cout << server->users[i]->posts[j].title << ": " << server->users[i]->posts[j].text << endl;
+                if (server->users[i]->posts[j].num_likes > 0)
+                {
+                    cout << "Likes: ";
+                    for (unsigned int k = 0; k < server->users[i]->posts[j].num_likes; k++)
+                    {
+                        cout << server->users[i]->posts[j].like_users[k]->username << " ";
+                    }
+                    cout << endl;
+                }
+                if (server->users[i]->posts[j].num_comments > 0)
+                {
+                    cout << "Comments: ";
+                    for (unsigned int k = 0; k < server->users[i]->posts[j].num_comments; k++)
+                    {
+                        cout << server->users[i]->posts[j].comments[k].user->username << ": " << server->users[i]->posts[j].comments[k].text << endl;
+                    }
+                    cout << endl;
+                }
+                cout << "------------" << endl;
+            }
+        }
+    }
     //-------Read log--------
     string lpath = string(logpath);
     ifstream logfile(lpath);
@@ -70,7 +108,7 @@ Server_t *serverInit(const char *fpath)
         ostringstream oStream;
         if (username_n > MAX_USERS)
         {
-            oStream << "Too many users!" << endl;
+            oStream << "Error: Too many users!" << endl;
             oStream << "Maximal number of users is " << MAX_USERS << "." << endl;
             throw Exception_t(CAPACITY_OVERFLOW, oStream.str());
         }
@@ -104,17 +142,86 @@ void readUserInfo(Server_t *server)
     {
         string fpath = "users/";
         fpath += server->users[user_i]->username;
-        string userinfo = fpath + "/user_info";
-        ifstream user_info(userinfo);
+        string userinfo_dir = fpath + "/user_info";
+        ifstream user_info(userinfo_dir);
         string buffer;
         // Get posts
         getline(user_info, buffer);
-        int num_posts = (unsigned int)stoi(buffer);
+        unsigned int num_posts = (unsigned int)stoi(buffer);
         checkCapacity(num_posts, "posts", server->users[user_i]->username);
         server->users[user_i]->num_posts = num_posts;
-        for (unsigned int post_i = 1; post_i < num_posts + 1; post_i++)
+        string post_dir;
+        for (unsigned int post_i = 0; post_i < num_posts; post_i++)
         {
-            //TODO: Read posts
+            // server->users[user_i]l.posts[post_i] = new Post_t;
+            server->users[user_i]->posts[post_i].owner = new User_t;
+            // server->users[user_i]->posts[post_i]->owner = server->users[user_i];
+            server->users[user_i]->posts[post_i].owner = server->users[user_i]; // FIXME
+            // Create the post, link it to the owner.
+
+            ostringstream post_dir;
+            post_dir << fpath << "/posts/" << (post_i + 1);
+            ifstream post_info(post_dir.str());
+            string buffer;
+            getline(post_info, buffer);
+            // server->users[user_i]->posts[post_i]->title = buffer;
+            server->users[user_i]->posts[post_i].title = buffer; // FIXME
+            unsigned int tags_i = 0;
+            while (getline(post_info, buffer))
+            {
+                if ((buffer.find("#") == 0) && (buffer.rfind("#") == buffer.length() - 1))
+                {
+                    // checkCapacity(tags_i + 1, "tags", server->users[user_i]->posts[post_i]->title);
+                    checkCapacity(tags_i + 1, "tags", server->users[user_i]->posts[post_i].title); // FIXME
+                    string tag_str = buffer.substr(1, buffer.length() - 2);
+                    // server->users[user_i]->posts[post_i]->tags[tags_i] = tag_str;
+                    server->users[user_i]->posts[post_i].tags[tags_i] = tag_str; // FIXME
+                    tags_i++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            // server->users[user_i]->posts[post_i]->num_tags = tags_i;
+            // server->users[user_i]->posts[post_i]->text = buffer;
+            server->users[user_i]->posts[post_i].num_tags = tags_i;
+            server->users[user_i]->posts[post_i].text = buffer; // FIXME
+            // Title, tags and text.
+
+            getline(post_info, buffer);
+            unsigned int num_likes = (unsigned int)stoi(buffer);
+            // checkCapacity(num_likes, "likes", server->users[user_i]->posts[post_i]->title);
+            checkCapacity(num_likes, "likes", server->users[user_i]->posts[post_i].title); // FIXME
+            // server->users[user_i]->posts[post_i]->num_likes = num_likes;
+            server->users[user_i]->posts[post_i].num_likes = num_likes; // FIXME
+            for (unsigned int likes_i = 0; likes_i < num_likes; likes_i++)
+            {
+                getline(post_info, buffer);
+                User_t *liker = findUser(buffer, server);
+                if (liker->username != "USER NOT FOUND")
+                {
+                    server->users[user_i]->posts[post_i].like_users[likes_i] = new User_t;
+                    server->users[user_i]->posts[post_i].like_users[likes_i] = liker;
+                }
+            }
+            // Likes
+
+            getline(post_info, buffer);
+            unsigned int num_comments = (unsigned int)stoi(buffer);
+            checkCapacity(num_comments, "comments", server->users[user_i]->posts[post_i].title);
+            server->users[user_i]->posts[post_i].num_comments = num_comments;
+            for (unsigned int comments_i = 0; comments_i < num_comments; comments_i++)
+            {
+                // server->users[user_i]->posts[post_i]->comments[comments_i] = new Comment_t;
+                getline(post_info, buffer);
+                User_t *commentor = findUser(buffer, server);
+                getline(post_info, buffer);
+                string comment_content = buffer;
+                server->users[user_i]->posts[post_i].comments[comments_i].user = commentor;
+                server->users[user_i]->posts[post_i].comments[comments_i].text = comment_content;
+            }
+            post_info.close();
         }
         // Get following
         getline(user_info, buffer);
@@ -133,7 +240,7 @@ void readUserInfo(Server_t *server)
         }
         // Get followers
         getline(user_info, buffer);
-        int num_followers = (unsigned int)stoi(buffer);
+        unsigned int num_followers = (unsigned int)stoi(buffer);
         checkCapacity(num_followers, "followers", server->users[user_i]->username);
         server->users[user_i]->num_followers = num_followers;
         for (unsigned int followers_i = 0; followers_i < num_followers; followers_i++)
@@ -146,6 +253,7 @@ void readUserInfo(Server_t *server)
                 server->users[user_i]->follower[followers_i] = follower;
             }
         }
+        user_info.close();
     }
 }
 
@@ -178,7 +286,7 @@ void checkFileValidity(ifstream &file, const char *fpath)
         {
             ostringstream oStream;
             string filepath = string(fpath);
-            oStream << "Cannot open file " << filepath << endl;
+            oStream << "Error: Cannot open file " << filepath << "!" << endl;
             throw Exception_t(FILE_MISSING, oStream.str());
         }
     }
@@ -231,7 +339,7 @@ void checkCapacity(unsigned int in_capacity, string capacityObject, string error
         if (in_capacity > CAPACITY)
         {
             ostringstream oStream;
-            oStream << "Too many" << capacityObject << " for " << errorObject << " " << errorObject_name << " !" << endl;
+            oStream << "Error: Too many " << capacityObject << " for " << errorObject << " " << errorObject_name << "!" << endl;
             oStream << "Maximal number of " << capacityObject << " is " << CAPACITY << "." << endl;
             throw Exception_t(CAPACITY_OVERFLOW, oStream.str());
         }

@@ -21,6 +21,8 @@ void readUserInfo(Server_t &server);
 void follow(Server_t &server, string user1, string user2);
 void unfollow(Server_t &server, string user1, string user2);
 void refresh(Server_t &server, string user);
+void visit(Server_t &server, string user1, string user2);
+void trending(Server_t &server);
 /*
 void visit(...);
 void trending(...);

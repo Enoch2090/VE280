@@ -17,8 +17,15 @@ void simulation(const char *userpath, const char *logpath)
     serverInit(server, userpath);
     //cout << server->num_users << " users." << endl; // XXX: CONSOLE
     readUserInfo(server);
-    refresh(server, "marstin");
+
     /* CONSOLE
+    refresh(server, "marstin");
+    visit(server, "marstin", "paul.weng");
+    visit(server, "marstin", "fyq990508");
+    visit(server, "marstin", "yinguoxin2017");
+    visit(server, "marstin", "marstin");
+    visit(server, "paul.weng", "leepace666666");
+
     for (unsigned int i = 0; i < server.num_users; i++) // XXX: CONSOLE
     {
         cout << server.users[i].username << " following " << server.users[i].num_following << ": " << endl;
@@ -83,6 +90,7 @@ void simulation(const char *userpath, const char *logpath)
         }
     }
 */
+
     //-------Read log--------
     string lpath = string(logpath);
     ifstream logfile(lpath);
@@ -287,6 +295,58 @@ void refresh(Server_t &server, string user)
     {
         //TODO: Handle USER_NOT_EXIST;
     }
+}
+
+void visit(Server_t &server, string user1, string user2) // User1 visit User2
+{
+    cout << ">> visit" << endl;
+    cout << user2 << endl;
+    int user_1_i = findUser(user1, server);
+    int user_2_i = findUser(user2, server);
+    // TODO: Handle USER_NOT_EXIST;
+    string relationship_status = "";
+    if (user1 != user2)
+    {
+        bool isFollowingUser2 = false;
+        bool isFollowedByUser2 = false;
+        for (unsigned int following_i = 0; following_i < server.users[user_2_i].num_following; following_i++)
+        {
+            if (server.users[user_2_i].following[following_i]->username == user1)
+            {
+                isFollowedByUser2 = true;
+            }
+        }
+        for (unsigned int followed_i = 0; followed_i < server.users[user_1_i].num_following; followed_i++)
+        {
+            if (server.users[user_1_i].following[followed_i]->username == user2)
+            {
+                isFollowingUser2 = true;
+            }
+        }
+        if (isFollowedByUser2 && isFollowingUser2)
+        {
+            relationship_status = "friend\n";
+        }
+        else if ((!isFollowedByUser2) && isFollowingUser2)
+        {
+            relationship_status = "following\n";
+        }
+        else if (isFollowedByUser2 && (!isFollowingUser2))
+        {
+            relationship_status = "followed\n";
+        }
+        else if ((!isFollowedByUser2) && (!isFollowingUser2))
+        {
+            relationship_status = "stranger\n";
+        }
+    }
+    cout << relationship_status;
+    cout << "Followers: " << server.users[user_2_i].num_followers << endl;
+    cout << "Following: " << server.users[user_2_i].num_following << endl;
+}
+
+void trending(Server_t &server)
+{
 }
 /* Helper Functions */
 

@@ -18,7 +18,7 @@
 void simulation(const char *userpath, const char *logpath);
 Server_t *serverInit(const char *fpath);
 void readUserInfo(Server_t *server);
-
+void follow(Server_t *server, string user1, string user2);
 /*
 void visit(...);
 void trending(...);

@@ -1,6 +1,6 @@
 /*
  * This is VE280 Project 2, SU2020.
- * Written by Ziqiao Ma and Zhuoer Zhu.
+ * Written by Ziqiao Ma and Zhuoer Zhu. 
  * Latest Update: 5/29/2020.
  * All rights reserved.
  */
@@ -14,8 +14,9 @@ void simulation(const char *userpath, const char *logpath)
 { // Main simulation function
     //------Read users------
     Server_t *server = serverInit(userpath);
-    cout << server->num_users << " users." << endl; // XXX: CONSOLE
+    //cout << server->num_users << " users." << endl; // XXX: CONSOLE
     readUserInfo(server);
+    /*  CONSOLE
     for (unsigned int i = 0; i < server->num_users; i++) // XXX: CONSOLE
     {
         cout << server->users[i]->username << " following " << server->users[i]->num_following << ": " << endl;
@@ -79,6 +80,7 @@ void simulation(const char *userpath, const char *logpath)
             }
         }
     }
+    */
     //-------Read log--------
     string lpath = string(logpath);
     ifstream logfile(lpath);
@@ -153,10 +155,8 @@ void readUserInfo(Server_t *server)
         string post_dir;
         for (unsigned int post_i = 0; post_i < num_posts; post_i++)
         {
-            // server->users[user_i]l.posts[post_i] = new Post_t;
             server->users[user_i]->posts[post_i].owner = new User_t;
-            // server->users[user_i]->posts[post_i]->owner = server->users[user_i];
-            server->users[user_i]->posts[post_i].owner = server->users[user_i]; // FIXME
+            server->users[user_i]->posts[post_i].owner = server->users[user_i];
             // Create the post, link it to the owner.
 
             ostringstream post_dir;
@@ -164,18 +164,15 @@ void readUserInfo(Server_t *server)
             ifstream post_info(post_dir.str());
             string buffer;
             getline(post_info, buffer);
-            // server->users[user_i]->posts[post_i]->title = buffer;
-            server->users[user_i]->posts[post_i].title = buffer; // FIXME
+            server->users[user_i]->posts[post_i].title = buffer;
             unsigned int tags_i = 0;
             while (getline(post_info, buffer))
             {
                 if ((buffer.find("#") == 0) && (buffer.rfind("#") == buffer.length() - 1))
                 {
-                    // checkCapacity(tags_i + 1, "tags", server->users[user_i]->posts[post_i]->title);
-                    checkCapacity(tags_i + 1, "tags", server->users[user_i]->posts[post_i].title); // FIXME
+                    checkCapacity(tags_i + 1, "tags", server->users[user_i]->posts[post_i].title);
                     string tag_str = buffer.substr(1, buffer.length() - 2);
-                    // server->users[user_i]->posts[post_i]->tags[tags_i] = tag_str;
-                    server->users[user_i]->posts[post_i].tags[tags_i] = tag_str; // FIXME
+                    server->users[user_i]->posts[post_i].tags[tags_i] = tag_str;
                     tags_i++;
                 }
                 else
@@ -183,18 +180,14 @@ void readUserInfo(Server_t *server)
                     break;
                 }
             }
-            // server->users[user_i]->posts[post_i]->num_tags = tags_i;
-            // server->users[user_i]->posts[post_i]->text = buffer;
             server->users[user_i]->posts[post_i].num_tags = tags_i;
-            server->users[user_i]->posts[post_i].text = buffer; // FIXME
+            server->users[user_i]->posts[post_i].text = buffer;
             // Title, tags and text.
 
             getline(post_info, buffer);
             unsigned int num_likes = (unsigned int)stoi(buffer);
-            // checkCapacity(num_likes, "likes", server->users[user_i]->posts[post_i]->title);
-            checkCapacity(num_likes, "likes", server->users[user_i]->posts[post_i].title); // FIXME
-            // server->users[user_i]->posts[post_i]->num_likes = num_likes;
-            server->users[user_i]->posts[post_i].num_likes = num_likes; // FIXME
+            checkCapacity(num_likes, "likes", server->users[user_i]->posts[post_i].title);
+            server->users[user_i]->posts[post_i].num_likes = num_likes;
             for (unsigned int likes_i = 0; likes_i < num_likes; likes_i++)
             {
                 getline(post_info, buffer);
@@ -213,7 +206,6 @@ void readUserInfo(Server_t *server)
             server->users[user_i]->posts[post_i].num_comments = num_comments;
             for (unsigned int comments_i = 0; comments_i < num_comments; comments_i++)
             {
-                // server->users[user_i]->posts[post_i]->comments[comments_i] = new Comment_t;
                 getline(post_info, buffer);
                 User_t *commentor = findUser(buffer, server);
                 getline(post_info, buffer);
@@ -257,10 +249,30 @@ void readUserInfo(Server_t *server)
     }
 }
 
+void follow(Server_t *server, string user1, string user2) // User1 follow User2
+{
+    //TODO: CAPACITY_OVERFLOW
+    User_t *user_1 = findUser(user1, server);
+    User_t *user_2 = findUser(user2, server);
+    user_1->num_following++;
+    user_2->num_followers++;
+    unsigned int following_i = user_1->num_following - 1; // The index.
+    unsigned int followers_i = user_2->num_followers - 1;
+    user_1->following[following_i] = new User_t;
+    user_1->following[following_i] = user_2;
+    user_2->following[followers_i] = new User_t;
+    user_2->following[followers_i] = user_1;
+}
+
+void unfollow(Server_t *server, string user1, string user2) // User1 unfollow User2
+
+{
+    //TODO: CAPACITY_OVERFLOW
+    // ????WTF
+}
 /* Helper Functions */
 
 // Data Handling
-
 User_t *findUser(const string username, const Server_t *server)
 {
     for (unsigned int i = 0; i < server->num_users; i++)
@@ -274,8 +286,6 @@ User_t *findUser(const string username, const Server_t *server)
     NULL_USER->username = "USER NOT FOUND";
     return NULL_USER;
 }
-
-// File Handling
 
 // Error Handling
 void checkFileValidity(ifstream &file, const char *fpath)
@@ -294,6 +304,7 @@ void checkFileValidity(ifstream &file, const char *fpath)
     {
         cout << exception.error_info;
         exit(0);
+        // TODO: Multiple try and catch blocks.
     }
 }
 

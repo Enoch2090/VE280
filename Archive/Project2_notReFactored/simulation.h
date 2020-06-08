@@ -16,11 +16,9 @@
 
 /* Simulation Processing Functions */
 void simulation(const char *userpath, const char *logpath);
-void serverInit(Server_t &server, const char *fpath);
-void readUserInfo(Server_t &server);
-void follow(Server_t &server, string user1, string user2);
-void unfollow(Server_t &server, string user1, string user2);
-void refresh(Server_t &server, string user);
+Server_t *serverInit(const char *fpath);
+void readUserInfo(Server_t *server);
+void follow(Server_t *server, string user1, string user2);
 /*
 void visit(...);
 void trending(...);
@@ -37,7 +35,7 @@ void unpost(...);
 
 /* Helper Functions */
 // Data Handling
-int findUser(const string username, const Server_t &server);
+User_t *findUser(const string username, const Server_t *server);
 
 // File Handling
 

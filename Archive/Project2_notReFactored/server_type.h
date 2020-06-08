@@ -143,6 +143,20 @@ struct User_t
     unsigned int num_followers;
 };
 
+struct User_list
+/*
+// Type: User_list
+// ------------------
+// Used to pass a list of usernames.
+// * size: The size of the list
+// * users: The list of usernames.
+*/
+{
+    int size;
+    string **username;
+    //TODO: destruction of struct
+};
+
 struct Server_t
 /*
 // Type: Server_t
@@ -153,7 +167,7 @@ struct Server_t
 // * num_users: the number of users
 */
 {
-    User_t users[MAX_USERS];
+    User_t *users[MAX_USERS];
     unsigned int num_users;
 };
 

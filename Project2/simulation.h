@@ -39,8 +39,10 @@ void unpost(...);
 
 /* Helper Functions */
 // Data Handling
+void updateTagScore(Server_t &server);
+void addTagtoServer(const string tagname, Server_t &server);
 int findUser(const string username, const Server_t &server);
-
+int findTag(const string tagname, const Server_t &server);
 // File Handling
 
 // Error Handling

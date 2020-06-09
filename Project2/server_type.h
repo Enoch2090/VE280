@@ -34,6 +34,11 @@ const unsigned int MAX_COMMENTS = 50;
 // Max number of tags per post
 const unsigned int MAX_TAGS = 5;
 
+const int POST_SCORE = 5;
+
+const int COMT_SCORE = 3;
+
+const int LIKE_SCORE = 1;
 /* Exception */
 enum Error_t
 {
@@ -154,7 +159,9 @@ struct Server_t
 */
 {
     User_t users[MAX_USERS];
+    Tag_t tags[MAX_TAGS];
     unsigned int num_users;
+    unsigned int num_tags;
 };
 
 #endif // SERVER_TYPE_H

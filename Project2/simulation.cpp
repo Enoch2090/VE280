@@ -17,7 +17,7 @@ void simulation(const char *userpath, const char *logpath)
     serverInit(server, userpath);
     //cout << server->num_users << " users." << endl; // XXX: CONSOLE
     readUserInfo(server);
-
+    trending(Server_t & server);
     /* CONSOLE
     refresh(server, "marstin");
     visit(server, "marstin", "paul.weng");
@@ -140,6 +140,7 @@ void serverInit(Server_t &server, const char *fpath)
         i++;
     }
     server.num_users = username_n;
+    server.num_tags = 0;
     username_list.close();
 }
 
@@ -176,6 +177,7 @@ void readUserInfo(Server_t &server)
                     checkCapacity(tags_i + 1, "tags", server.users[user_i].posts[post_i].title);
                     string tag_str = buffer.substr(1, buffer.length() - 2);
                     server.users[user_i].posts[post_i].tags[tags_i] = tag_str;
+                    addTagtoServer(tag_str, server); // Also add to server's tag lib.
                     tags_i++;
                 }
                 else
@@ -347,10 +349,74 @@ void visit(Server_t &server, string user1, string user2) // User1 visit User2
 
 void trending(Server_t &server)
 {
+    cout << ">> trending" << endl;
+    updateTagScore(server);
+    //XXX: Better sort algoritm? Bubble costs too much.
+    for (unsigned int tag_i = 0; tag_i < server.num_tags - 1; tag_i++)
+    {
+        for (unsigned int tag_j = 0; tag_i < server.num_tags - 1 - tag_i; tag_j++)
+        {
+            if ((server.tags[tag_j].tag_score > server.tags[tag_j + 1].tag_score) || ((server.tags[tag_j].tag_score = server.tags[tag_j + 1].tag_score) && (server.tags[tag_j].tag_content < server.tags[tag_j + 1].tag_content)))
+            {
+                int score_buffer = server.tags[tag_j].tag_score;
+                string content_buffer = server.tags[tag_j].tag_content;
+                server.tags[tag_j].tag_score = server.tags[tag_j + 1].tag_score;
+                server.tags[tag_j].tag_content = server.tags[tag_j + 1].tag_content;
+                server.tags[tag_j + 1].tag_score = score_buffer;
+                server.tags[tag_j + 1].tag_content = content_buffer;
+            }
+        }
+    }
+    if (server.num_tags > 5)
+    {
+        for (unsigned int tag_i = server.num_tags - 1; tag_i > server.num_tags - 6; tag_i--)
+        {
+            printTag(server.tags[tag_i], (server.num_tags - tag_i));
+        }
+    }
+    else
+    {
+        for (unsigned int tag_i = server.num_tags - 1; tag_i > -1; tag_i--)
+        {
+            printTag(server.tags[tag_i], (server.num_tags - tag_i));
+        }
+    }
 }
 /* Helper Functions */
 
 // Data Handling
+void updateTagScore(Server_t &server)
+{
+    for (unsigned int tag_index = 0; tag_index < server.num_tags; tag_index++)
+    {
+        server.tags[tag_index].tag_score = 0;
+    }
+    for (unsigned int user_i = 0; user_i < server.num_users; user_i++)
+    {
+        for (unsigned int post_i = 0; post_i < server.users[user_i].num_posts; post_i++)
+        {
+            for (unsigned int tag_i = 0; tag_i < server.users[user_i].posts[post_i].num_tags; tag_i++)
+            {
+                int tag_index = findTag(server.users[user_i].posts[post_i].tags[tag_i], server);
+                if (tag_index != -1)
+                {
+                    server.tags[tag_index].tag_score += (POST_SCORE + COMT_SCORE * server.users[user_i].posts[post_i].num_comments + LIKE_SCORE * server.users[user_i].posts[post_i].num_likes); // See server_type.h for const defs.
+                }
+            }
+        }
+    }
+}
+
+void addTagtoServer(const string tagname, Server_t &server)
+{
+    int tag_index = findTag(tagname, server);
+    if (tag_index == -1)
+    {
+        server.tags[server.num_tags].tag_content = tagname;
+        server.tags[server.num_tags].tag_score = 0; // Lazy load, save some memory.
+        server.num_tags++;
+    }
+}
 int findUser(const string username, const Server_t &server)
 {
     for (unsigned int i = 0; i < server.num_users; i++)
@@ -363,6 +429,17 @@ int findUser(const string username, const Server_t &server)
     return -1;
 }
 
+int findTag(const string tagname, const Server_t &server)
+{
+    for (unsigned int i = 0; i < server.num_users; i++)
+    {
+        if (server.tags[i].tag_content == tagname)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
 // Error Handling
 void checkFileValidity(ifstream &file, const char *fpath)
 {

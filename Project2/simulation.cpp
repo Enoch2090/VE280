@@ -18,7 +18,7 @@ void simulation(const char *userpath, const char *logpath)
     server.num_users = 0;
     serverInit(server, userpath);
     readUserInfo(server);
-
+    /* CONSOLE
     // refresh(server, "marstin");
     // visit(server, "marstin", "paul.weng");
     // visit(server, "marstin", "fyq990508");
@@ -88,7 +88,7 @@ void simulation(const char *userpath, const char *logpath)
             }
         }
     }
-
+    */
     // for (unsigned int i = 0; i < server.num_tags; i++)
     // {
     //     cout << server.tags[i].tag_content << endl;
@@ -104,7 +104,6 @@ void simulation(const char *userpath, const char *logpath)
     //bool receivePost = false;
     while (getline(logfile, line_buffer))
     {
-
         istringstream iStream;
         iStream.str(line_buffer);
         iStream >> buffer;
@@ -186,13 +185,13 @@ void serverInit(Server_t &server, const char *fpath)
 
 void readUserInfo(Server_t &server)
 {
+    istringstream iSstream;
     for (unsigned int user_i = 0; user_i < server.num_users; user_i++)
     {
         string fpath = "users/";
         fpath += server.users[user_i].username;
         string userinfo_dir = fpath + "/user_info";
         ifstream user_info(userinfo_dir);
-        istringstream iSstream;
         string buffer;
         // Get posts
         getline(user_info, buffer);
@@ -236,10 +235,10 @@ void readUserInfo(Server_t &server)
 
             getline(post_info, buffer);
             iSstream.str(buffer);
-            cout << buffer << " ";
             unsigned int num_likes;
             iSstream >> num_likes;
-            cout << num_likes << endl;
+            iSstream.str("");
+            // cout << buffer << " " << num_likes << endl;
             string capacityObject = "likes";
             checkCapacity(num_likes, capacityObject, server.users[user_i].posts[post_i].title);
             server.users[user_i].posts[post_i].num_likes = num_likes;
@@ -258,6 +257,7 @@ void readUserInfo(Server_t &server)
             iSstream.str(buffer);
             unsigned int num_comments;
             iSstream >> num_comments;
+            iSstream.str("");
             capacityObject = "comments";
             checkCapacity(num_comments, capacityObject, server.users[user_i].posts[post_i].title);
             server.users[user_i].posts[post_i].num_comments = num_comments;
@@ -280,6 +280,8 @@ void readUserInfo(Server_t &server)
         iSstream.str(buffer);
         unsigned int num_following;
         iSstream >> num_following;
+        iSstream.str("");
+        cout << buffer << " " << num_following << endl;
         capacityObject = "followings";
         checkCapacity(num_following, capacityObject, server.users[user_i].username);
         server.users[user_i].num_following = num_following;

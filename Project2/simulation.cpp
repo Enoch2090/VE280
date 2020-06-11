@@ -16,9 +16,23 @@ void simulation(const char *userpath, const char *logpath)
     Server_t server;
     server.num_tags = 0;
     server.num_users = 0;
-    serverInit(server, userpath);
-    readUserInfo(server);
-    /* CONSOLE
+    try
+    {
+        serverInit(server, userpath);
+    }
+    catch (const Exception_t &exception)
+    {
+        throw exception;
+    }
+    try
+    {
+        readUserInfo(server);
+    }
+    catch (const Exception_t &exception)
+    {
+        throw exception;
+    }
+    /*
     // refresh(server, "marstin");
     // visit(server, "marstin", "paul.weng");
     // visit(server, "marstin", "fyq990508");
@@ -89,6 +103,7 @@ void simulation(const char *userpath, const char *logpath)
         }
     }
     */
+
     // for (unsigned int i = 0; i < server.num_tags; i++)
     // {
     //     cout << server.tags[i].tag_content << endl;
@@ -102,8 +117,9 @@ void simulation(const char *userpath, const char *logpath)
     string line_buffer;
     string buffer;
     //bool receivePost = false;
-    while (getline(logfile, line_buffer))
+    while (logfile.peek() != EOF)
     {
+        getline(logfile, line_buffer);
         istringstream iStream;
         iStream.str(line_buffer);
         iStream >> buffer;
@@ -167,13 +183,14 @@ void serverInit(Server_t &server, const char *fpath)
     }
     catch (const Exception_t &exception)
     {
-        cout << exception.error_info;
+        throw exception;
     }
     username_list.clear();
     username_list.seekg(0, ios::beg); // Rewind for reading
     unsigned int users_i = 0;
     username_n--; // The first line is redundant
     getline(username_list, buffer);
+    server.fpath = buffer + "/";
     while (getline(username_list, buffer))
     {
         server.users[users_i].username = buffer;
@@ -185,21 +202,33 @@ void serverInit(Server_t &server, const char *fpath)
 
 void readUserInfo(Server_t &server)
 {
-    istringstream iSstream;
     for (unsigned int user_i = 0; user_i < server.num_users; user_i++)
     {
-        string fpath = "users/";
-        fpath += server.users[user_i].username;
-        string userinfo_dir = fpath + "/user_info";
-        ifstream user_info(userinfo_dir);
+        string userinfo_dir = server.fpath + server.users[user_i].username;
+        string userinfo_file = userinfo_dir + "/user_info";
         string buffer;
+        ifstream user_info(userinfo_file);
+        try
+        {
+            checkFileValidity(user_info, userinfo_file.c_str());
+        }
+        catch (const Exception_t &exception)
+        {
+            throw exception;
+        }
         // Get posts
-        getline(user_info, buffer);
-        iSstream.str(buffer);
         unsigned int num_posts;
-        iSstream >> num_posts;
+        user_info >> num_posts;
+        // cout << server.users[user_i].username << " posts: " << num_posts << endl; // XXX: CONS
         string capacityObject = "posts";
-        checkCapacity(num_posts, capacityObject, server.users[user_i].username);
+        try
+        {
+            checkCapacity(num_posts, capacityObject, server.users[user_i].username);
+        }
+        catch (const Exception_t &exception)
+        {
+            throw exception;
+        }
         server.users[user_i].num_posts = num_posts;
         string post_dir;
         for (unsigned int post_i = 0; post_i < num_posts; post_i++)
@@ -207,18 +236,34 @@ void readUserInfo(Server_t &server)
             server.users[user_i].posts[post_i].owner = &(server.users[user_i]);
             // Create the post, link it to the owner.
             ostringstream post_dir;
-            post_dir << fpath << "/posts/" << (post_i + 1);
+            post_dir << userinfo_dir << "/posts/" << (post_i + 1);
             ifstream post_info(post_dir.str());
+            try
+            {
+                checkFileValidity(post_info, post_dir.str().c_str());
+            }
+            catch (const Exception_t &exception)
+            {
+                throw exception;
+            }
             string buffer;
             getline(post_info, buffer);
             server.users[user_i].posts[post_i].title = buffer;
+            // cout << buffer << endl; // XXX: CONS
             unsigned int tags_i = 0;
-            while (getline(post_info, buffer))
+            while (post_info >> buffer)
             {
                 if ((buffer.find("#") == 0) && (buffer.rfind("#") == buffer.length() - 1))
                 {
                     string capacityObject = "tags";
-                    checkCapacity(tags_i + 1, capacityObject, server.users[user_i].posts[post_i].title);
+                    try
+                    {
+                        checkCapacity(tags_i + 1, capacityObject, server.users[user_i].posts[post_i].title);
+                    }
+                    catch (const Exception_t &exception)
+                    {
+                        throw exception;
+                    }
                     string tag_str = buffer.substr(1, buffer.length() - 2);
                     server.users[user_i].posts[post_i].tags[tags_i] = tag_str;
                     addTagtoServer(tag_str, server); // Also add to server's tag lib.
@@ -229,42 +274,58 @@ void readUserInfo(Server_t &server)
                     break;
                 }
             }
+            string buffer2;
+            getline(post_info, buffer2);
             server.users[user_i].posts[post_i].num_tags = tags_i;
-            server.users[user_i].posts[post_i].text = buffer;
+            server.users[user_i].posts[post_i].text = buffer + buffer2;
+            // cout << server.users[user_i].username << " post " << buffer + buffer2 << " tag " << tags_i << endl; // XXX: CONS
+
             // Title, tags and text.
 
-            getline(post_info, buffer);
-            iSstream.str(buffer);
             unsigned int num_likes;
-            iSstream >> num_likes;
-            iSstream.str("");
-            // cout << buffer << " " << num_likes << endl;
+            post_info >> num_likes;
+            // cout << "-likes: " << num_likes << endl; // XXX: CONS
             string capacityObject = "likes";
-            checkCapacity(num_likes, capacityObject, server.users[user_i].posts[post_i].title);
+            try
+            {
+                checkCapacity(num_likes, capacityObject, server.users[user_i].posts[post_i].title);
+            }
+            catch (const Exception_t &exception)
+            {
+                throw exception;
+            }
+
             server.users[user_i].posts[post_i].num_likes = num_likes;
             for (unsigned int likes_i = 0; likes_i < num_likes; likes_i++)
             {
-                getline(post_info, buffer);
+                post_info >> buffer;
                 int liker_i = findUser(buffer, server);
                 if (liker_i != -1)
                 {
                     server.users[user_i].posts[post_i].like_users[likes_i] = &(server.users[liker_i]);
                 }
+                // cout << buffer << endl; // XXX: CONS
             }
             // Likes
-
-            getline(post_info, buffer);
-            iSstream.str(buffer);
             unsigned int num_comments;
-            iSstream >> num_comments;
-            iSstream.str("");
+            post_info >> num_comments;
+            // cout << "comments: " << num_comments << endl; // XXX: CONS
             capacityObject = "comments";
-            checkCapacity(num_comments, capacityObject, server.users[user_i].posts[post_i].title);
+            try
+            {
+                checkCapacity(num_comments, capacityObject, server.users[user_i].posts[post_i].title);
+            }
+            catch (const Exception_t &exception)
+            {
+                throw exception;
+            }
             server.users[user_i].posts[post_i].num_comments = num_comments;
+            post_info.get();
             for (unsigned int comments_i = 0; comments_i < num_comments; comments_i++)
             {
                 getline(post_info, buffer);
                 int commentor_i = findUser(buffer, server);
+                // cout << buffer << ": " << endl; // XXX: CONS
                 getline(post_info, buffer);
                 string comment_content = buffer;
                 if (commentor_i != -1)
@@ -272,19 +333,26 @@ void readUserInfo(Server_t &server)
                     server.users[user_i].posts[post_i].comments[comments_i].user = &(server.users[commentor_i]);
                     server.users[user_i].posts[post_i].comments[comments_i].text = comment_content;
                 }
+                // cout << buffer << endl; // XXX: CONS
             }
             post_info.close();
         }
         // Get following
-        getline(user_info, buffer);
-        iSstream.str(buffer);
         unsigned int num_following;
-        iSstream >> num_following;
-        iSstream.str("");
-        cout << buffer << " " << num_following << endl;
+        user_info >> num_following;
+        // cout << "-following: " << num_following << endl; // XXX: CONS
         capacityObject = "followings";
-        checkCapacity(num_following, capacityObject, server.users[user_i].username);
+        try
+        {
+            checkCapacity(num_following, capacityObject, server.users[user_i].username);
+        }
+        catch (const Exception_t &exception)
+        {
+            throw exception;
+        }
+
         server.users[user_i].num_following = num_following;
+        user_info.get();
         for (unsigned int following_i = 0; following_i < num_following; following_i++)
         {
             getline(user_info, buffer);
@@ -293,15 +361,25 @@ void readUserInfo(Server_t &server)
             {
                 server.users[user_i].following[following_i] = &(server.users[following_user_i]);
             }
+            // cout << buffer << endl; // XXX: CONS
         }
+
         // Get followers
-        getline(user_info, buffer);
-        iSstream.str(buffer);
         unsigned int num_followers;
-        iSstream >> num_followers;
+        user_info >> num_followers;
         capacityObject = "followers";
-        checkCapacity(num_followers, capacityObject, server.users[user_i].username);
+        // cout << "-follower: " << num_followers << endl; // XXX: CONS
+        capacityObject = "followers";
+        try
+        {
+            checkCapacity(num_followers, capacityObject, server.users[user_i].username);
+        }
+        catch (const Exception_t &exception)
+        {
+            throw exception;
+        }
         server.users[user_i].num_followers = num_followers;
+        user_info.get();
         for (unsigned int followers_i = 0; followers_i < num_followers; followers_i++)
         {
             getline(user_info, buffer);
@@ -310,8 +388,10 @@ void readUserInfo(Server_t &server)
             {
                 server.users[user_i].follower[followers_i] = &(server.users[follower_user_i]);
             }
+            // cout << buffer << endl;// XXX: CONS
         }
         user_info.close();
+        // cout << "--------" << endl; // XXX: CONS
     }
 }
 
@@ -413,6 +493,7 @@ void trending(Server_t &server, unsigned int trending_count)
     cout << ">> trending" << endl;
     updateTagScore(server);
     sortTagsbyScore(server);
+    // cout << server.num_tags << endl; // XXX: CONS
     if (server.num_tags > trending_count)
     {
         for (unsigned int tag_i = server.num_tags - 1; tag_i > server.num_tags - trending_count - 1; tag_i--)
@@ -428,6 +509,8 @@ void trending(Server_t &server, unsigned int trending_count)
             {
                 printTag(server.tags[tag_i], (server.num_tags - tag_i));
             }
+            printTag(server.tags[1], (server.num_tags));
+            printTag(server.tags[0], (server.num_tags));
         }
         else if (server.num_tags == 2)
         {
@@ -538,8 +621,7 @@ void checkFileValidity(ifstream &file, const char *fpath)
     }
     catch (const Exception_t &exception)
     {
-        cout << exception.error_info;
-        // TODO: Multiple try and catch blocks.
+        throw exception;
     }
 }
 
@@ -592,8 +674,7 @@ void checkCapacity(unsigned int in_capacity, string capacityObject, string error
     }
     catch (const Exception_t &exception)
     {
-        cout << exception.error_info;
-        exit(0);
+        throw exception;
     }
 }
 

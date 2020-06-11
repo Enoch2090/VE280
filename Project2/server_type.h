@@ -9,7 +9,7 @@
 #define SERVER_TYPE_H
 
 #include <string>
- 
+
 using namespace std;
 
 /* Constants */
@@ -161,6 +161,7 @@ struct Server_t
     Tag_t tags[MAX_TAGS];
     unsigned int num_users;
     unsigned int num_tags;
+    string fpath;
 };
 
 #endif // SERVER_TYPE_H

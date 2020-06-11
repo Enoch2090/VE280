@@ -20,6 +20,14 @@ int main(int argc, char *argv[])
         cout << exception.error_info;
         return 0;
     }
-    simulation(argv[1], argv[2]);
+    try
+    {
+        simulation(argv[1], argv[2]);
+    }
+    catch (const Exception_t &exception)
+    {
+        cout << exception.error_info;
+        return 0;
+    }
     return 0;
 }

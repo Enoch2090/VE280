@@ -14,18 +14,17 @@ void simulation(const char *userpath, const char *logpath)
 { // Main simulation function
     //------Read users------
     Server_t server;
+    server.num_tags = 0;
+    server.num_users = 0;
     serverInit(server, userpath);
-    //cout << server->num_users << " users." << endl; // XXX: CONSOLE
     readUserInfo(server);
-    trending(Server_t & server);
-    /* CONSOLE
-    refresh(server, "marstin");
-    visit(server, "marstin", "paul.weng");
-    visit(server, "marstin", "fyq990508");
-    visit(server, "marstin", "yinguoxin2017");
-    visit(server, "marstin", "marstin");
-    visit(server, "paul.weng", "leepace666666");
 
+    // refresh(server, "marstin");
+    // visit(server, "marstin", "paul.weng");
+    // visit(server, "marstin", "fyq990508");
+    // visit(server, "marstin", "yinguoxin2017");
+    // visit(server, "marstin", "marstin");
+    // visit(server, "paul.weng", "leepace666666");
     for (unsigned int i = 0; i < server.num_users; i++) // XXX: CONSOLE
     {
         cout << server.users[i].username << " following " << server.users[i].num_following << ": " << endl;
@@ -89,16 +88,59 @@ void simulation(const char *userpath, const char *logpath)
             }
         }
     }
-*/
+
+    // for (unsigned int i = 0; i < server.num_tags; i++)
+    // {
+    //     cout << server.tags[i].tag_content << endl;
+    // }
+    // cout << server.num_tags << endl;
 
     //-------Read log--------
     string lpath = string(logpath);
     ifstream logfile(lpath);
     checkFileValidity(logfile, logpath);
+    string line_buffer;
     string buffer;
-    while (getline(logfile, buffer))
+    //bool receivePost = false;
+    while (getline(logfile, line_buffer))
     {
-        // TODO: Read logfile
+
+        istringstream iStream;
+        iStream.str(line_buffer);
+        iStream >> buffer;
+        if (buffer == "trending")
+        {
+            unsigned int trending_count;
+            iStream >> trending_count;
+            trending(server, trending_count);
+        }
+        else
+        {
+            string user1 = buffer;
+            iStream >> buffer;
+            if (buffer == "refresh")
+            {
+                refresh(server, user1);
+            }
+            else if (buffer == "visit")
+            {
+                iStream >> buffer;
+                string user2 = buffer;
+                visit(server, user1, user2);
+            }
+            else if (buffer == "follow")
+            {
+                iStream >> buffer;
+                string user2 = buffer;
+                follow(server, user1, user2);
+            }
+            else if (buffer == "unfollow")
+            {
+                iStream >> buffer;
+                string user2 = buffer;
+                follow(server, user1, user2); // TODO: UNFO
+            }
+        }
     }
     logfile.close();
 }
@@ -127,20 +169,18 @@ void serverInit(Server_t &server, const char *fpath)
     catch (const Exception_t &exception)
     {
         cout << exception.error_info;
-        exit(0);
     }
     username_list.clear();
     username_list.seekg(0, ios::beg); // Rewind for reading
-    unsigned int i = 0;
-    username_n--;
+    unsigned int users_i = 0;
+    username_n--; // The first line is redundant
     getline(username_list, buffer);
     while (getline(username_list, buffer))
     {
-        server.users[i].username = buffer;
-        i++;
+        server.users[users_i].username = buffer;
+        users_i++;
     }
     server.num_users = username_n;
-    server.num_tags = 0;
     username_list.close();
 }
 
@@ -152,11 +192,15 @@ void readUserInfo(Server_t &server)
         fpath += server.users[user_i].username;
         string userinfo_dir = fpath + "/user_info";
         ifstream user_info(userinfo_dir);
+        istringstream iSstream;
         string buffer;
         // Get posts
         getline(user_info, buffer);
-        unsigned int num_posts = (unsigned int)stoi(buffer);
-        checkCapacity(num_posts, "posts", server.users[user_i].username);
+        iSstream.str(buffer);
+        unsigned int num_posts;
+        iSstream >> num_posts;
+        string capacityObject = "posts";
+        checkCapacity(num_posts, capacityObject, server.users[user_i].username);
         server.users[user_i].num_posts = num_posts;
         string post_dir;
         for (unsigned int post_i = 0; post_i < num_posts; post_i++)
@@ -174,7 +218,8 @@ void readUserInfo(Server_t &server)
             {
                 if ((buffer.find("#") == 0) && (buffer.rfind("#") == buffer.length() - 1))
                 {
-                    checkCapacity(tags_i + 1, "tags", server.users[user_i].posts[post_i].title);
+                    string capacityObject = "tags";
+                    checkCapacity(tags_i + 1, capacityObject, server.users[user_i].posts[post_i].title);
                     string tag_str = buffer.substr(1, buffer.length() - 2);
                     server.users[user_i].posts[post_i].tags[tags_i] = tag_str;
                     addTagtoServer(tag_str, server); // Also add to server's tag lib.
@@ -190,8 +235,13 @@ void readUserInfo(Server_t &server)
             // Title, tags and text.
 
             getline(post_info, buffer);
-            unsigned int num_likes = (unsigned int)stoi(buffer);
-            checkCapacity(num_likes, "likes", server.users[user_i].posts[post_i].title);
+            iSstream.str(buffer);
+            cout << buffer << " ";
+            unsigned int num_likes;
+            iSstream >> num_likes;
+            cout << num_likes << endl;
+            string capacityObject = "likes";
+            checkCapacity(num_likes, capacityObject, server.users[user_i].posts[post_i].title);
             server.users[user_i].posts[post_i].num_likes = num_likes;
             for (unsigned int likes_i = 0; likes_i < num_likes; likes_i++)
             {
@@ -205,8 +255,11 @@ void readUserInfo(Server_t &server)
             // Likes
 
             getline(post_info, buffer);
-            unsigned int num_comments = (unsigned int)stoi(buffer);
-            checkCapacity(num_comments, "comments", server.users[user_i].posts[post_i].title);
+            iSstream.str(buffer);
+            unsigned int num_comments;
+            iSstream >> num_comments;
+            capacityObject = "comments";
+            checkCapacity(num_comments, capacityObject, server.users[user_i].posts[post_i].title);
             server.users[user_i].posts[post_i].num_comments = num_comments;
             for (unsigned int comments_i = 0; comments_i < num_comments; comments_i++)
             {
@@ -224,8 +277,11 @@ void readUserInfo(Server_t &server)
         }
         // Get following
         getline(user_info, buffer);
-        int num_following = (unsigned int)stoi(buffer);
-        checkCapacity(num_following, "followings", server.users[user_i].username);
+        iSstream.str(buffer);
+        unsigned int num_following;
+        iSstream >> num_following;
+        capacityObject = "followings";
+        checkCapacity(num_following, capacityObject, server.users[user_i].username);
         server.users[user_i].num_following = num_following;
         for (unsigned int following_i = 0; following_i < num_following; following_i++)
         {
@@ -238,8 +294,11 @@ void readUserInfo(Server_t &server)
         }
         // Get followers
         getline(user_info, buffer);
-        unsigned int num_followers = (unsigned int)stoi(buffer);
-        checkCapacity(num_followers, "followers", server.users[user_i].username);
+        iSstream.str(buffer);
+        unsigned int num_followers;
+        iSstream >> num_followers;
+        capacityObject = "followers";
+        checkCapacity(num_followers, capacityObject, server.users[user_i].username);
         server.users[user_i].num_followers = num_followers;
         for (unsigned int followers_i = 0; followers_i < num_followers; followers_i++)
         {
@@ -347,38 +406,35 @@ void visit(Server_t &server, string user1, string user2) // User1 visit User2
     cout << "Following: " << server.users[user_2_i].num_following << endl;
 }
 
-void trending(Server_t &server)
+void trending(Server_t &server, unsigned int trending_count)
 {
     cout << ">> trending" << endl;
     updateTagScore(server);
-    //XXX: Better sort algoritm? Bubble costs too much.
-    for (unsigned int tag_i = 0; tag_i < server.num_tags - 1; tag_i++)
+    sortTagsbyScore(server);
+    if (server.num_tags > trending_count)
     {
-        for (unsigned int tag_j = 0; tag_i < server.num_tags - 1 - tag_i; tag_j++)
-        {
-            if ((server.tags[tag_j].tag_score > server.tags[tag_j + 1].tag_score) || ((server.tags[tag_j].tag_score = server.tags[tag_j + 1].tag_score) && (server.tags[tag_j].tag_content < server.tags[tag_j + 1].tag_content)))
-            {
-                int score_buffer = server.tags[tag_j].tag_score;
-                string content_buffer = server.tags[tag_j].tag_content;
-                server.tags[tag_j].tag_score = server.tags[tag_j + 1].tag_score;
-                server.tags[tag_j].tag_content = server.tags[tag_j + 1].tag_content;
-                server.tags[tag_j + 1].tag_score = score_buffer;
-                server.tags[tag_j + 1].tag_content = content_buffer;
-            }
-        }
-    }
-    if (server.num_tags > 5)
-    {
-        for (unsigned int tag_i = server.num_tags - 1; tag_i > server.num_tags - 6; tag_i--)
+        for (unsigned int tag_i = server.num_tags - 1; tag_i > server.num_tags - trending_count - 1; tag_i--)
         {
             printTag(server.tags[tag_i], (server.num_tags - tag_i));
         }
     }
     else
     {
-        for (unsigned int tag_i = server.num_tags - 1; tag_i > -1; tag_i--)
+        if (server.num_tags > 2)
         {
-            printTag(server.tags[tag_i], (server.num_tags - tag_i));
+            for (unsigned int tag_i = server.num_tags - 1; tag_i > 1; tag_i--)
+            {
+                printTag(server.tags[tag_i], (server.num_tags - tag_i));
+            }
+        }
+        else if (server.num_tags == 2)
+        {
+            printTag(server.tags[1], (server.num_tags));
+            printTag(server.tags[0], (server.num_tags));
+        }
+        else if (server.num_tags == 1)
+        {
+            printTag(server.tags[0], (server.num_tags));
         }
     }
 }
@@ -417,6 +473,31 @@ void addTagtoServer(const string tagname, Server_t &server)
         server.num_tags++;
     }
 }
+
+void sortTagsbyScore(Server_t &server) //XXX: Better sort algoritm? Bubble costs too much.
+{
+    if (server.num_tags > 1)
+    {
+        unsigned int score_buffer;
+        string content_buffer;
+        for (unsigned int tag_i = 0; tag_i < server.num_tags - 1; tag_i++)
+        {
+            for (unsigned int tag_j = 0; tag_j < server.num_tags - 1 - tag_i; tag_j++)
+            {
+                if ((server.tags[tag_j].tag_score > server.tags[tag_j + 1].tag_score) || ((server.tags[tag_j].tag_score == server.tags[tag_j + 1].tag_score) && (server.tags[tag_j].tag_content < server.tags[tag_j + 1].tag_content)))
+                {
+                    score_buffer = server.tags[tag_j].tag_score;
+                    content_buffer = server.tags[tag_j].tag_content;
+                    server.tags[tag_j].tag_score = server.tags[tag_j + 1].tag_score;
+                    server.tags[tag_j].tag_content = server.tags[tag_j + 1].tag_content;
+                    server.tags[tag_j + 1].tag_score = score_buffer;
+                    server.tags[tag_j + 1].tag_content = content_buffer;
+                }
+            }
+        }
+    }
+}
+
 int findUser(const string username, const Server_t &server)
 {
     for (unsigned int i = 0; i < server.num_users; i++)
@@ -431,7 +512,7 @@ int findUser(const string username, const Server_t &server)
 
 int findTag(const string tagname, const Server_t &server)
 {
-    for (unsigned int i = 0; i < server.num_users; i++)
+    for (unsigned int i = 0; i < server.num_tags; i++)
     {
         if (server.tags[i].tag_content == tagname)
         {
@@ -456,7 +537,6 @@ void checkFileValidity(ifstream &file, const char *fpath)
     catch (const Exception_t &exception)
     {
         cout << exception.error_info;
-        exit(0);
         // TODO: Multiple try and catch blocks.
     }
 }

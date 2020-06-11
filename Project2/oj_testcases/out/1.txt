@@ -1,0 +1,3 @@
+>> delete
+Error: zhuzhuoer cannot delete post #1!
+zhuzhuoer does not have post #1.

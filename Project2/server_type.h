@@ -9,7 +9,7 @@
 #define SERVER_TYPE_H
 
 #include <string>
-
+ 
 using namespace std;
 
 /* Constants */
@@ -52,7 +52,6 @@ struct Exception_t : public exception
 {
     Error_t error;
     string error_info;
-
     Exception_t(Error_t err, const string &info)
     {
         this->error = err;

@@ -22,7 +22,7 @@ void follow(Server_t &server, string user1, string user2);
 void unfollow(Server_t &server, string user1, string user2);
 void refresh(Server_t &server, string user);
 void visit(Server_t &server, string user1, string user2);
-void trending(Server_t &server);
+void trending(Server_t &server, unsigned int trending_count);
 /*
 void visit(...);
 void trending(...);
@@ -40,6 +40,7 @@ void unpost(...);
 /* Helper Functions */
 // Data Handling
 void updateTagScore(Server_t &server);
+void sortTagsbyScore(Server_t &server);
 void addTagtoServer(const string tagname, Server_t &server);
 int findUser(const string username, const Server_t &server);
 int findTag(const string tagname, const Server_t &server);

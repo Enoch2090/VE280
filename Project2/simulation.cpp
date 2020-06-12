@@ -32,77 +32,43 @@ void simulation(const char *userpath, const char *logpath)
     {
         throw exception;
     }
-    /*
+    // console(server);
+    // refresh(server, "paul.weng");
+    // cout << "+-+-+-+-+-+==========+-+-+-+-+-+" << endl;
+    // follow(server, "paul.weng", "marstin");
+    // refresh(server, "paul.weng");
+    // cout << "+-+-+-+-+-+==========+-+-+-+-+-+" << endl;
+    // unfollow(server, "paul.weng", "marstin");
+    // refresh(server, "paul.weng");
+    // cout << "+-+-+-+-+-+==========+-+-+-+-+-+" << endl;
+    // for (int i = 0; i < server.users[0].num_following - 1; i++)
+    // {
+    //     cout << server.users[0].following[i]->username << " ";
+    // }
+    // cout << endl;
+    // for (int i = 0; i < server.users[3].num_followers - 1; i++)
+    // {
+    //     cout << server.users[3].follower[i]->username << " ";
+    // }
+    // cout << endl;
+    // //follow(server, "paul.weng", "marstin");
+    // for (int i = 0; i < server.users[0].num_following - 1; i++)
+    // {
+    //     cout << server.users[0].following[i]->username << " ";
+    // }
+    // cout << endl;
+    // for (int i = 0; i < server.users[3].num_followers - 1; i++)
+    // {
+    //     cout << server.users[3].follower[i]->username << " ";
+    // }
+    // cout << endl;
+
     // refresh(server, "marstin");
     // visit(server, "marstin", "paul.weng");
     // visit(server, "marstin", "fyq990508");
     // visit(server, "marstin", "yinguoxin2017");
     // visit(server, "marstin", "marstin");
     // visit(server, "paul.weng", "leepace666666");
-    for (unsigned int i = 0; i < server.num_users; i++) // XXX: CONSOLE
-    {
-        cout << server.users[i].username << " following " << server.users[i].num_following << ": " << endl;
-        if (server.users[i].num_following > 0)
-        {
-            for (unsigned int j = 0; j < server.users[i].num_following; j++)
-            {
-                cout << server.users[i].following[j]->username << endl;
-            }
-            cout << "------------" << endl;
-        }
-    }
-    cout << "-+-+-+-+-+-+-+-+-" << endl;
-    for (unsigned int i = 0; i < server.num_users; i++) // XXX: CONSOLE
-    {
-        cout << server.users[i].username << " follower " << server.users[i].num_followers << ": " << endl;
-        if (server.users[i].num_followers > 0)
-        {
-            for (unsigned int j = 0; j < server.users[i].num_followers; j++)
-            {
-                cout << server.users[i].follower[j]->username << endl;
-            }
-            cout << "------------" << endl;
-        }
-    }
-    cout << "-+-+-+-+-+-+-+-+-" << endl;
-    for (unsigned int i = 0; i < server.num_users; i++) // XXX: CONSOLE
-    {
-        if (server.users[i].num_posts > 0)
-        {
-            cout << server.users[i].username << " posts:" << endl;
-            cout << server.users[i].num_posts << endl;
-            for (unsigned int j = 0; j < server.users[i].num_posts; j++)
-            {
-                cout << "Tags: ";
-                for (unsigned int k = 0; k < server.users[i].posts[j].num_tags; k++)
-                {
-                    cout << server.users[i].posts[j].tags[k] << " ";
-                }
-                cout << endl;
-                cout << server.users[i].posts[j].title << ": " << server.users[i].posts[j].text << endl;
-                if (server.users[i].posts[j].num_likes > 0)
-                {
-                    cout << "Likes: ";
-                    for (unsigned int k = 0; k < server.users[i].posts[j].num_likes; k++)
-                    {
-                        cout << server.users[i].posts[j].like_users[k]->username << " ";
-                    }
-                    cout << endl;
-                }
-                if (server.users[i].posts[j].num_comments > 0)
-                {
-                    cout << "Comments: ";
-                    for (unsigned int k = 0; k < server.users[i].posts[j].num_comments; k++)
-                    {
-                        cout << server.users[i].posts[j].comments[k].user->username << ": " << server.users[i].posts[j].comments[k].text << endl;
-                    }
-                    cout << endl;
-                }
-                cout << "------------" << endl;
-            }
-        }
-    }
-    */
 
     // for (unsigned int i = 0; i < server.num_tags; i++)
     // {
@@ -154,6 +120,12 @@ void simulation(const char *userpath, const char *logpath)
                 iStream >> buffer;
                 string user2 = buffer;
                 follow(server, user1, user2); // TODO: UNFO
+            }
+            else if (buffer == "delete")
+            {
+                unsigned int post_id;
+                iStream >> post_id;
+                unpost(server, user1, post_id);
             }
         }
     }
@@ -395,10 +367,30 @@ void readUserInfo(Server_t &server)
     }
 }
 
+void unpost(Server_t &server, string user1, unsigned int post_id)
+{
+    cout << ">> delete" << endl;
+    int user_1_i = findUser(user1, server);
+    if (server.users[user_1_i].num_posts < post_id)
+    {
+        cout << "ERROR" << endl; //TODO: ERROR HANDLING
+    }
+    else
+    {
+        for (unsigned int user1_post_i = post_id - 1; user1_post_i < server.users[user_1_i].num_posts - 1; ++user1_post_i)
+        {
+            server.users[user_1_i].posts[user1_post_i] = server.users[user_1_i].posts[user1_post_i + 1];
+        }
+        server.users[user_1_i].num_posts--;
+        server.users[user_1_i].posts[server.users[user_1_i].num_posts] = server.dummy_post;
+    }
+}
+
 void follow(Server_t &server, string user1, string user2) // User1 follow User2
 {
     cout << ">> follow" << endl;
     //TODO: CAPACITY_OVERFLOW
+    //TODO: INVALID FOLLOW
     int user_1_i = findUser(user1, server);
     int user_2_i = findUser(user2, server);
     server.users[user_1_i].num_following++;
@@ -406,14 +398,55 @@ void follow(Server_t &server, string user1, string user2) // User1 follow User2
     unsigned int following_i = server.users[user_1_i].num_following - 1; // The index.
     unsigned int followers_i = server.users[user_2_i].num_followers - 1;
     server.users[user_1_i].following[following_i] = &(server.users[user_2_i]);
-    server.users[user_2_i].following[followers_i] = &(server.users[user_1_i]);
+    server.users[user_2_i].follower[followers_i] = &(server.users[user_1_i]);
 }
 
 void unfollow(Server_t &server, string user1, string user2) // User1 unfollow User2
 
 {
     //TODO: CAPACITY_OVERFLOW
-    // ????WTF
+    cout << ">> unfollow" << endl;
+    int user_1_i = findUser(user1, server);
+    int user_2_i = findUser(user2, server);
+    bool is_following = false;
+    unsigned int user1_following_index = 0;
+    unsigned int user2_follower_index = 0;
+    for (unsigned int user2_follower_i = 0; user2_follower_i < server.users[user_2_i].num_followers; ++user2_follower_i)
+    {
+        if (server.users[user_2_i].follower[user2_follower_i]->username == user1)
+        {
+            is_following = true;
+            user2_follower_index = user2_follower_i;
+        }
+    } // First traverse all followers of user2, confirming user1 is in it and also getting index.
+    if (is_following)
+    {
+        for (unsigned int user2_follower_i = user2_follower_index; user2_follower_i < server.users[user_2_i].num_followers - 1; ++user2_follower_i)
+        {
+            server.users[user_2_i].follower[user2_follower_i] = server.users[user_2_i].follower[user2_follower_i + 1];
+            for (int i = 0; i < server.users[user_2_i].num_followers - 1; i++)
+            {
+                cout << server.users[user_2_i].follower[i]->username << " ";
+            }
+            cout << endl;
+        }
+    }
+    for (unsigned int user1_following_i = 0; user1_following_i < server.users[user_1_i].num_following; ++user1_following_i)
+    {
+        if (server.users[user_1_i].following[user1_following_i]->username == user2)
+        {
+            user1_following_index = user1_following_i;
+        }
+    }
+    for (unsigned int user1_following_i = user1_following_index; user1_following_i < server.users[user_1_i].num_following - 1; ++user1_following_i)
+    {
+
+        server.users[user_1_i].following[user1_following_i] = server.users[user_1_i].following[user1_following_i + 1];
+    }
+    server.users[user_1_i].num_following--;
+    server.users[user_2_i].num_followers--;
+    server.users[user_1_i].following[server.users[user_1_i].num_following] = &(server.dummy_user);
+    server.users[user_2_i].follower[server.users[user_2_i].num_followers] = &(server.dummy_user);
 }
 
 void refresh(Server_t &server, string user)
@@ -607,6 +640,7 @@ int findTag(const string tagname, const Server_t &server)
     return -1;
 }
 // Error Handling
+
 void checkFileValidity(ifstream &file, const char *fpath)
 {
     try
@@ -713,3 +747,70 @@ void printTag(const Tag_t &tag, unsigned int rank)
 {
     cout << rank << " " << tag.tag_content << ": " << tag.tag_score << endl;
 };
+
+void console(Server_t &server)
+{
+    for (unsigned int i = 0; i < server.num_users; i++) // XXX: CONSOLE
+    {
+        cout << server.users[i].username << " following " << server.users[i].num_following << ": " << endl;
+        if (server.users[i].num_following > 0)
+        {
+            for (unsigned int j = 0; j < server.users[i].num_following; j++)
+            {
+                cout << server.users[i].following[j]->username << endl;
+            }
+            cout << "------------" << endl;
+        }
+    }
+    cout << "-+-+-+-+-+-+-+-+-" << endl;
+    for (unsigned int i = 0; i < server.num_users; i++) // XXX: CONSOLE
+    {
+        cout << server.users[i].username << " follower " << server.users[i].num_followers << ": " << endl;
+        if (server.users[i].num_followers > 0)
+        {
+            for (unsigned int j = 0; j < server.users[i].num_followers; j++)
+            {
+                cout << server.users[i].follower[j]->username << endl;
+            }
+            cout << "------------" << endl;
+        }
+    }
+    cout << "-+-+-+-+-+-+-+-+-" << endl;
+    for (unsigned int i = 0; i < server.num_users; i++) // XXX: CONSOLE
+    {
+        if (server.users[i].num_posts > 0)
+        {
+            cout << server.users[i].username << " posts:" << endl;
+            cout << server.users[i].num_posts << endl;
+            for (unsigned int j = 0; j < server.users[i].num_posts; j++)
+            {
+                cout << "Tags: ";
+                for (unsigned int k = 0; k < server.users[i].posts[j].num_tags; k++)
+                {
+                    cout << server.users[i].posts[j].tags[k] << " ";
+                }
+                cout << endl;
+                cout << server.users[i].posts[j].title << ": " << server.users[i].posts[j].text << endl;
+                if (server.users[i].posts[j].num_likes > 0)
+                {
+                    cout << "Likes: ";
+                    for (unsigned int k = 0; k < server.users[i].posts[j].num_likes; k++)
+                    {
+                        cout << server.users[i].posts[j].like_users[k]->username << " ";
+                    }
+                    cout << endl;
+                }
+                if (server.users[i].posts[j].num_comments > 0)
+                {
+                    cout << "Comments: ";
+                    for (unsigned int k = 0; k < server.users[i].posts[j].num_comments; k++)
+                    {
+                        cout << server.users[i].posts[j].comments[k].user->username << ": " << server.users[i].posts[j].comments[k].text << endl;
+                    }
+                    cout << endl;
+                }
+                cout << "------------" << endl;
+            }
+        }
+    }
+}

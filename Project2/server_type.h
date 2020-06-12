@@ -158,6 +158,8 @@ struct Server_t
 */
 {
     User_t users[MAX_USERS];
+    User_t dummy_user;
+    Post_t dummy_post;
     Tag_t tags[MAX_TAGS];
     unsigned int num_users;
     unsigned int num_tags;

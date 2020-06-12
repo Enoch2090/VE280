@@ -14,10 +14,13 @@
 // TODO: Declare your functions in this header file.
 // Hint: You may need these request handling functions.
 
-/* Simulation Processing Functions */
+/* Simulation Process Functions */
 void simulation(const char *userpath, const char *logpath);
 void serverInit(Server_t &server, const char *fpath);
 void readUserInfo(Server_t &server);
+
+/* Simulation Action Functions */
+void unpost(Server_t &server, string user1, unsigned int post_id);
 void follow(Server_t &server, string user1, string user2);
 void unfollow(Server_t &server, string user1, string user2);
 void refresh(Server_t &server, string user);
@@ -55,3 +58,5 @@ void checkCapacity(unsigned int in_capacity, string capacityObject, string error
 void printUser(User_t &user, const string &relationship);
 void printPost(Post_t &post);
 void printTag(const Tag_t &tag, unsigned int rank);
+
+void console(Server_t &server);

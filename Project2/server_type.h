@@ -161,6 +161,7 @@ struct Server_t
     User_t dummy_user;
     Post_t dummy_post;
     Tag_t tags[MAX_TAGS];
+    Comment_t dummy_comment;
     unsigned int num_users;
     unsigned int num_tags;
     string fpath;

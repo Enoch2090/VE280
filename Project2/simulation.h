@@ -20,7 +20,12 @@ void serverInit(Server_t &server, const char *fpath);
 void readUserInfo(Server_t &server);
 
 /* Simulation Action Functions */
+void comment(Server_t &server, string user1, string user2, unsigned int post_id, string comment_body);
+void uncomment(Server_t &server, string user1, string user2, unsigned int post_id, unsigned int comment_id);
+void post(Server_t &server, string user1, string title, string tags[], string text, unsigned int tag_num);
 void unpost(Server_t &server, string user1, unsigned int post_id);
+void like(Server_t &server, string user1, string user2, unsigned int post_id);
+void unlike(Server_t &server, string user1, string user2, unsigned int post_id);
 void follow(Server_t &server, string user1, string user2);
 void unfollow(Server_t &server, string user1, string user2);
 void refresh(Server_t &server, string user);

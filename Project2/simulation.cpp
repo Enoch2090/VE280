@@ -6,7 +6,7 @@
  */
 
 #include "simulation.h"
-using namespace std;
+
 // TODO: Define your functions
 /* Simulation Processing Functions */
 
@@ -82,6 +82,15 @@ void simulation(const char *userpath, const char *logpath)
     checkFileValidity(logfile, logpath);
     string line_buffer;
     string buffer;
+    string buffer2;
+    string user1;
+    string user2;
+    string post_title;
+    string post_body;
+    string post_tags[MAX_TAGS];
+    string comment_content;
+    unsigned int post_id;
+    unsigned int comment_id;
     //bool receivePost = false;
     while (logfile.peek() != EOF)
     {
@@ -97,7 +106,7 @@ void simulation(const char *userpath, const char *logpath)
         }
         else
         {
-            string user1 = buffer;
+            user1 = buffer;
             iStream >> buffer;
             if (buffer == "refresh")
             {
@@ -105,29 +114,68 @@ void simulation(const char *userpath, const char *logpath)
             }
             else if (buffer == "visit")
             {
-                iStream >> buffer;
-                string user2 = buffer;
+                iStream >> user2;
                 visit(server, user1, user2);
             }
             else if (buffer == "follow")
             {
-                iStream >> buffer;
-                string user2 = buffer;
+                iStream >> user2;
                 follow(server, user1, user2);
             }
             else if (buffer == "unfollow")
             {
-                iStream >> buffer;
-                string user2 = buffer;
-                follow(server, user1, user2); // TODO: UNFO
+                iStream >> user2;
+                unfollow(server, user1, user2); // TODO: UNFO
+            }
+            else if (buffer == "post")
+            {
+                getline(logfile, post_title);
+                unsigned int tags_i = 0;
+                while (logfile >> buffer)
+                {
+                    //TODO: Check capacity
+                    if ((buffer.find("#") == 0) && (buffer.rfind("#") == buffer.length() - 1))
+                    {
+                        post_tags[tags_i] = buffer.substr(1, buffer.length() - 2);
+                        tags_i++;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                getline(logfile, buffer2);
+                post_body = buffer + buffer2;
+                post(server, user1, post_title, post_tags, post_body, tags_i);
             }
             else if (buffer == "delete")
             {
-                unsigned int post_id;
                 iStream >> post_id;
                 unpost(server, user1, post_id);
             }
+            else if (buffer == "like")
+            {
+                iStream >> user2 >> post_id;
+                like(server, user1, user2, post_id);
+            }
+            else if (buffer == "unlike")
+            {
+                iStream >> user2 >> post_id;
+                unlike(server, user1, user2, post_id);
+            }
+            else if (buffer == "comment")
+            {
+                iStream >> user2 >> post_id;
+                getline(logfile, comment_content);
+                comment(server, user1, user2, post_id, comment_content);
+            }
+            else if (buffer == "uncomment")
+            {
+                iStream >> user2 >> post_id >> comment_id;
+                uncomment(server, user1, user2, post_id, comment_id);
+            }
         }
+        //console(server);
     }
     logfile.close();
 }
@@ -174,6 +222,7 @@ void serverInit(Server_t &server, const char *fpath)
 
 void readUserInfo(Server_t &server)
 {
+    //TODO: INIT DUMMIES
     for (unsigned int user_i = 0; user_i < server.num_users; user_i++)
     {
         string userinfo_dir = server.fpath + server.users[user_i].username;
@@ -367,6 +416,29 @@ void readUserInfo(Server_t &server)
     }
 }
 
+void post(Server_t &server, string user1, string title, string tags[], string text, unsigned int tag_num)
+{
+    //TODO: CHECK CAPACITY
+    cout << ">> post" << endl;
+    int user_1_i = findUser(user1, server);
+    if (user_1_i != -1)
+    {
+        unsigned int post_i = server.users[user_1_i].num_posts;
+        server.users[user_1_i].posts[post_i].title = title;
+        server.users[user_1_i].posts[post_i].text = text;
+        server.users[user_1_i].posts[post_i].num_comments = 0;
+        server.users[user_1_i].posts[post_i].num_likes = 0;
+        server.users[user_1_i].posts[post_i].num_tags = tag_num;
+        server.users[user_1_i].posts[post_i].owner = &(server.users[user_1_i]);
+        for (unsigned int tag_i = 0; tag_i < tag_num; ++tag_i)
+        {
+            server.users[user_1_i].posts[post_i].tags[tag_i] = tags[tag_i];
+            addTagtoServer(tags[tag_i], server);
+        }
+        server.users[user_1_i].num_posts++;
+    }
+}
+
 void unpost(Server_t &server, string user1, unsigned int post_id)
 {
     cout << ">> delete" << endl;
@@ -383,6 +455,93 @@ void unpost(Server_t &server, string user1, unsigned int post_id)
         }
         server.users[user_1_i].num_posts--;
         server.users[user_1_i].posts[server.users[user_1_i].num_posts] = server.dummy_post;
+    }
+}
+
+void comment(Server_t &server, string user1, string user2, unsigned int post_id, string comment_body)
+{
+    cout << ">> comment" << endl;
+    int user_1_i = findUser(user1, server);
+    int user_2_i = findUser(user2, server);
+    if (server.users[user_2_i].num_posts >= post_id)
+    {
+        unsigned int comment_i = server.users[user_2_i].posts[post_id - 1].num_comments;
+        server.users[user_2_i].posts[post_id - 1].comments[comment_i].text = comment_body;
+        server.users[user_2_i].posts[post_id - 1].comments[comment_i].user = &(server.users[user_1_i]);
+        server.users[user_2_i].posts[post_id - 1].num_comments++;
+    }
+}
+
+void uncomment(Server_t &server, string user1, string user2, unsigned int post_id, unsigned int comment_id)
+{
+    cout << ">> uncomment" << endl;
+    int user_2_i = findUser(user2, server);
+    if (server.users[user_2_i].num_posts < post_id || server.users[user_2_i].posts[post_id - 1].num_comments < comment_id)
+    {
+        //cout << "ERROR" << endl; //TODO: ERROR HANDLING
+    }
+    else
+    {
+        if (server.users[user_2_i].posts[post_id - 1].comments[comment_id - 1].user->username == user1)
+        {
+            for (unsigned int comment_i = comment_id - 1; comment_i < server.users[user_2_i].posts[post_id - 1].num_comments - 1; ++comment_i)
+            {
+                server.users[user_2_i].posts[post_id - 1].comments[comment_i] = server.users[user_2_i].posts[post_id - 1].comments[comment_i + 1];
+            }
+            unsigned int comment_i = server.users[user_2_i].posts[post_id - 1].num_comments;
+            server.users[user_2_i].posts[post_id - 1].comments[comment_i - 1] = server.dummy_comment;
+            server.users[user_2_i].posts[post_id - 1].num_comments--;
+        }
+    }
+}
+
+void like(Server_t &server, string user1, string user2, unsigned int post_id) // User1 likes User2's post post_id
+{
+    cout << ">> like" << endl;
+    int user_1_i = findUser(user1, server);
+    int user_2_i = findUser(user2, server);
+    if (server.users[user_2_i].num_posts < post_id)
+    {
+        cout << "ERROR" << endl; //TODO: ERROR HANDLING
+    }
+    else
+    {
+        unsigned int likers_i = server.users[user_2_i].posts[post_id - 1].num_likes; //TODO: ERROR HANDLING
+        server.users[user_2_i].posts[post_id - 1].like_users[likers_i] = &(server.users[user_1_i]);
+        server.users[user_2_i].posts[post_id - 1].num_likes++;
+    }
+}
+
+void unlike(Server_t &server, string user1, string user2, unsigned int post_id) // TODO: Test whether the last in sequence acts nornally.//TODO: Test whether relike overwrites the dummy successfully.
+{
+    cout << ">> unlike" << endl;
+    int user_2_i = findUser(user2, server);
+    if (server.users[user_2_i].num_posts < post_id)
+    {
+        cout << "ERROR" << endl; //TODO: ERROR HANDLING
+    }
+    else
+    {
+        unsigned int liker_index;
+        bool is_liked = false;
+        for (unsigned int liker_i = 0; liker_i < server.users[user_2_i].posts[post_id - 1].num_likes; ++liker_i)
+        {
+            if (server.users[user_2_i].posts[post_id - 1].like_users[liker_i]->username == user1)
+            {
+                liker_index = liker_i;
+                is_liked = true;
+            }
+        }
+        if (is_liked)
+        {
+            for (unsigned int liker_i = liker_index; liker_i < server.users[user_2_i].posts[post_id - 1].num_likes - 1; ++liker_i)
+            {
+                server.users[user_2_i].posts[post_id - 1].like_users[liker_i] = server.users[user_2_i].posts[post_id - 1].like_users[liker_i + 1];
+            }
+            unsigned int liker_i = server.users[user_2_i].posts[post_id - 1].num_likes;
+            server.users[user_2_i].posts[post_id - 1].like_users[liker_i] = &(server.dummy_user);
+            server.users[user_2_i].posts[post_id - 1].num_likes--;
+        }
     }
 }
 
@@ -424,11 +583,6 @@ void unfollow(Server_t &server, string user1, string user2) // User1 unfollow Us
         for (unsigned int user2_follower_i = user2_follower_index; user2_follower_i < server.users[user_2_i].num_followers - 1; ++user2_follower_i)
         {
             server.users[user_2_i].follower[user2_follower_i] = server.users[user_2_i].follower[user2_follower_i + 1];
-            for (int i = 0; i < server.users[user_2_i].num_followers - 1; i++)
-            {
-                cout << server.users[user_2_i].follower[i]->username << " ";
-            }
-            cout << endl;
         }
     }
     for (unsigned int user1_following_i = 0; user1_following_i < server.users[user_1_i].num_following; ++user1_following_i)
@@ -542,12 +696,12 @@ void trending(Server_t &server, unsigned int trending_count)
             {
                 printTag(server.tags[tag_i], (server.num_tags - tag_i));
             }
-            printTag(server.tags[1], (server.num_tags));
+            printTag(server.tags[1], (server.num_tags - 1));
             printTag(server.tags[0], (server.num_tags));
         }
         else if (server.num_tags == 2)
         {
-            printTag(server.tags[1], (server.num_tags));
+            printTag(server.tags[1], (server.num_tags - 1));
             printTag(server.tags[0], (server.num_tags));
         }
         else if (server.num_tags == 1)

@@ -160,7 +160,7 @@ struct Server_t
     User_t users[MAX_USERS];
     User_t dummy_user;
     Post_t dummy_post;
-    Tag_t tags[MAX_TAGS];
+    Tag_t tags[MAX_TAGS * MAX_POSTS * MAX_USERS];
     Comment_t dummy_comment;
     unsigned int num_users;
     unsigned int num_tags;

@@ -6,7 +6,7 @@
  */
 
 #include "simulation.h"
-
+using namespace std;
 // TODO: Define your functions
 /* Simulation Processing Functions */
 
@@ -94,88 +94,95 @@ void simulation(const char *userpath, const char *logpath)
     //bool receivePost = false;
     while (logfile.peek() != EOF)
     {
-        getline(logfile, line_buffer);
-        istringstream iStream;
-        iStream.str(line_buffer);
-        iStream >> buffer;
-        if (buffer == "trending")
+        try
         {
-            unsigned int trending_count;
-            iStream >> trending_count;
-            trending(server, trending_count);
-        }
-        else
-        {
-            user1 = buffer;
+            getline(logfile, line_buffer);
+            istringstream iStream;
+            iStream.str(line_buffer);
             iStream >> buffer;
-            if (buffer == "refresh")
+            if (buffer == "trending")
             {
-                refresh(server, user1);
+                unsigned int trending_count;
+                iStream >> trending_count;
+                trending(server, trending_count);
             }
-            else if (buffer == "visit")
+            else
             {
-                iStream >> user2;
-                visit(server, user1, user2);
-            }
-            else if (buffer == "follow")
-            {
-                iStream >> user2;
-                follow(server, user1, user2);
-            }
-            else if (buffer == "unfollow")
-            {
-                iStream >> user2;
-                unfollow(server, user1, user2); // TODO: UNFO
-            }
-            else if (buffer == "post")
-            {
-                getline(logfile, post_title);
-                unsigned int tags_i = 0;
-                while (logfile >> buffer)
+                user1 = buffer;
+                iStream >> buffer;
+                if (buffer == "refresh")
                 {
-                    //TODO: Check capacity
-                    if ((buffer.find("#") == 0) && (buffer.rfind("#") == buffer.length() - 1))
-                    {
-                        post_tags[tags_i] = buffer.substr(1, buffer.length() - 2);
-                        tags_i++;
-                    }
-                    else
-                    {
-                        break;
-                    }
+                    refresh(server, user1);
                 }
-                getline(logfile, buffer2);
-                post_body = buffer + buffer2;
-                post(server, user1, post_title, post_tags, post_body, tags_i);
+                else if (buffer == "visit")
+                {
+                    iStream >> user2;
+                    visit(server, user1, user2);
+                }
+                else if (buffer == "follow")
+                {
+                    iStream >> user2;
+                    follow(server, user1, user2);
+                }
+                else if (buffer == "unfollow")
+                {
+                    iStream >> user2;
+                    unfollow(server, user1, user2); // TODO: UNFO
+                }
+                else if (buffer == "post")
+                {
+                    getline(logfile, post_title);
+                    unsigned int tags_i = 0;
+                    while (logfile >> buffer)
+                    {
+                        //TODO: Check capacity
+                        if ((buffer.find("#") == 0) && (buffer.rfind("#") == buffer.length() - 1))
+                        {
+                            post_tags[tags_i] = buffer.substr(1, buffer.length() - 2);
+                            tags_i++;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    getline(logfile, buffer2);
+                    post_body = buffer + buffer2;
+                    post(server, user1, post_title, post_tags, post_body, tags_i);
+                }
+                else if (buffer == "delete")
+                {
+                    iStream >> post_id;
+                    unpost(server, user1, post_id);
+                }
+                else if (buffer == "like")
+                {
+                    iStream >> user2 >> post_id;
+                    like(server, user1, user2, post_id);
+                }
+                else if (buffer == "unlike")
+                {
+                    iStream >> user2 >> post_id;
+                    unlike(server, user1, user2, post_id);
+                }
+                else if (buffer == "comment")
+                {
+                    iStream >> user2 >> post_id;
+                    getline(logfile, comment_content);
+                    comment(server, user1, user2, post_id, comment_content);
+                }
+                else if (buffer == "uncomment")
+                {
+                    iStream >> user2 >> post_id >> comment_id;
+                    uncomment(server, user1, user2, post_id, comment_id);
+                }
             }
-            else if (buffer == "delete")
-            {
-                iStream >> post_id;
-                unpost(server, user1, post_id);
-            }
-            else if (buffer == "like")
-            {
-                iStream >> user2 >> post_id;
-                like(server, user1, user2, post_id);
-            }
-            else if (buffer == "unlike")
-            {
-                iStream >> user2 >> post_id;
-                unlike(server, user1, user2, post_id);
-            }
-            else if (buffer == "comment")
-            {
-                iStream >> user2 >> post_id;
-                getline(logfile, comment_content);
-                comment(server, user1, user2, post_id, comment_content);
-            }
-            else if (buffer == "uncomment")
-            {
-                iStream >> user2 >> post_id >> comment_id;
-                uncomment(server, user1, user2, post_id, comment_id);
-            }
+            //console(server);
         }
-        //console(server);
+        catch (const Exception_t &exception)
+        {
+            cout << exception.error_info;
+        }
     }
     logfile.close();
 }
@@ -445,10 +452,14 @@ void unpost(Server_t &server, string user1, unsigned int post_id)
     int user_1_i = findUser(user1, server);
     if (server.users[user_1_i].num_posts < post_id)
     {
-        cout << "ERROR" << endl; //TODO: ERROR HANDLING
+        ostringstream oStream;
+        oStream << "Error: " << user1 << " cannot delete post #" << post_id << "!" << endl
+                << user1 << " does not have post #" << post_id << "." << endl;
+        throw Exception_t(CAPACITY_OVERFLOW, oStream.str());
     }
     else
     {
+
         for (unsigned int user1_post_i = post_id - 1; user1_post_i < server.users[user_1_i].num_posts - 1; ++user1_post_i)
         {
             server.users[user_1_i].posts[user1_post_i] = server.users[user_1_i].posts[user1_post_i + 1];
@@ -463,7 +474,14 @@ void comment(Server_t &server, string user1, string user2, unsigned int post_id,
     cout << ">> comment" << endl;
     int user_1_i = findUser(user1, server);
     int user_2_i = findUser(user2, server);
-    if (server.users[user_2_i].num_posts >= post_id)
+    if (server.users[user_2_i].num_posts < post_id)
+    {
+        ostringstream oStream;
+        oStream << "Error: " << user1 << " cannot comment post #" << post_id << " of " << user2 << "!" << endl
+                << user2 << " does not have post #" << post_id << "." << endl;
+        throw Exception_t(CAPACITY_OVERFLOW, oStream.str());
+    }
+    else
     {
         unsigned int comment_i = server.users[user_2_i].posts[post_id - 1].num_comments;
         server.users[user_2_i].posts[post_id - 1].comments[comment_i].text = comment_body;
@@ -502,37 +520,68 @@ void like(Server_t &server, string user1, string user2, unsigned int post_id) //
     int user_2_i = findUser(user2, server);
     if (server.users[user_2_i].num_posts < post_id)
     {
-        cout << "ERROR" << endl; //TODO: ERROR HANDLING
+        ostringstream oStream;
+        oStream << "Error: " << user1 << " cannot like post #" << post_id << " of " << user2 << "!" << endl
+                << user2 << " does not have post #" << post_id << "." << endl;
+        throw Exception_t(CAPACITY_OVERFLOW, oStream.str());
     }
     else
     {
-        unsigned int likers_i = server.users[user_2_i].posts[post_id - 1].num_likes; //TODO: ERROR HANDLING
-        server.users[user_2_i].posts[post_id - 1].like_users[likers_i] = &(server.users[user_1_i]);
-        server.users[user_2_i].posts[post_id - 1].num_likes++;
+        bool has_liked = false;
+        for (unsigned int liker_i = 0; liker_i < server.users[user_2_i].posts[post_id - 1].num_likes; ++liker_i)
+        {
+            if (user1 == server.users[user_2_i].posts[post_id - 1].like_users[liker_i]->username)
+            {
+                has_liked = true;
+            }
+        }
+
+        if (has_liked)
+        {
+            ostringstream oStream;
+            oStream << "Error: " << user1 << " cannot like post #" << post_id << " of " << user2 << "!" << endl
+                    << user1 << " has already liked post #" << post_id << " of " << user2 << "." << endl;
+            throw Exception_t(CAPACITY_OVERFLOW, oStream.str());
+        }
+        else
+        {
+            unsigned int likers_i = server.users[user_2_i].posts[post_id - 1].num_likes; //TODO: ERROR HANDLING
+            server.users[user_2_i].posts[post_id - 1].like_users[likers_i] = &(server.users[user_1_i]);
+            server.users[user_2_i].posts[post_id - 1].num_likes++;
+        }
     }
 }
-
 void unlike(Server_t &server, string user1, string user2, unsigned int post_id) // TODO: Test whether the last in sequence acts nornally.//TODO: Test whether relike overwrites the dummy successfully.
 {
     cout << ">> unlike" << endl;
     int user_2_i = findUser(user2, server);
     if (server.users[user_2_i].num_posts < post_id)
     {
-        cout << "ERROR" << endl; //TODO: ERROR HANDLING
+        ostringstream oStream;
+        oStream << "Error: " << user1 << " cannot unlike post #" << post_id << " of " << user2 << "!" << endl
+                << user2 << " does not have post #" << post_id << "." << endl;
+        throw Exception_t(CAPACITY_OVERFLOW, oStream.str());
     }
     else
     {
         unsigned int liker_index;
-        bool is_liked = false;
+        bool has_liked = false;
         for (unsigned int liker_i = 0; liker_i < server.users[user_2_i].posts[post_id - 1].num_likes; ++liker_i)
         {
-            if (server.users[user_2_i].posts[post_id - 1].like_users[liker_i]->username == user1)
+            if (user1 == server.users[user_2_i].posts[post_id - 1].like_users[liker_i]->username)
             {
                 liker_index = liker_i;
-                is_liked = true;
+                has_liked = true;
             }
         }
-        if (is_liked)
+        if (!has_liked)
+        {
+            ostringstream oStream;
+            oStream << "Error: " << user1 << " cannot unlike post #" << post_id << " of " << user2 << "!" << endl
+                    << user1 << " has not liked post #" << post_id << " of " << user2 << "." << endl;
+            throw Exception_t(CAPACITY_OVERFLOW, oStream.str());
+        }
+        else
         {
             for (unsigned int liker_i = liker_index; liker_i < server.users[user_2_i].posts[post_id - 1].num_likes - 1; ++liker_i)
             {
@@ -813,7 +862,7 @@ void checkFileValidity(ifstream &file, const char *fpath)
     }
 }
 
-void checkCapacity(unsigned int in_capacity, string capacityObject, string errorObject_name)
+void checkCapacity(unsigned int in_capacity, string capacityObject, string errorObject_name) // The idea is that use such functions to handle those universal errors in initialization. As for specific errors later, handle them seperately
 {
     unsigned int CAPACITY;
     string errorObject = "user";

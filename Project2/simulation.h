@@ -20,6 +20,7 @@ void serverInit(Server_t &server, const char *fpath);
 void readUserInfo(Server_t &server);
 
 /* Simulation Action Functions */
+// Note: For all these functions, if the passed username is invalid, the call will be simply no effect. But they can handle such situation.
 void comment(Server_t &server, string user1, string user2, unsigned int post_id, string comment_body);
 void uncomment(Server_t &server, string user1, string user2, unsigned int post_id, unsigned int comment_id);
 void post(Server_t &server, string user1, string title, string tags[], string text, unsigned int tag_num);

@@ -32,49 +32,6 @@ void simulation(const char *userpath, const char *logpath)
     {
         throw exception;
     }
-    // console(server);
-    // refresh(server, "paul.weng");
-    // cout << "+-+-+-+-+-+==========+-+-+-+-+-+" << endl;
-    // follow(server, "paul.weng", "marstin");
-    // refresh(server, "paul.weng");
-    // cout << "+-+-+-+-+-+==========+-+-+-+-+-+" << endl;
-    // unfollow(server, "paul.weng", "marstin");
-    // refresh(server, "paul.weng");
-    // cout << "+-+-+-+-+-+==========+-+-+-+-+-+" << endl;
-    // for (int i = 0; i < server.users[0].num_following - 1; i++)
-    // {
-    //     cout << server.users[0].following[i]->username << " ";
-    // }
-    // cout << endl;
-    // for (int i = 0; i < server.users[3].num_followers - 1; i++)
-    // {
-    //     cout << server.users[3].follower[i]->username << " ";
-    // }
-    // cout << endl;
-    // //follow(server, "paul.weng", "marstin");
-    // for (int i = 0; i < server.users[0].num_following - 1; i++)
-    // {
-    //     cout << server.users[0].following[i]->username << " ";
-    // }
-    // cout << endl;
-    // for (int i = 0; i < server.users[3].num_followers - 1; i++)
-    // {
-    //     cout << server.users[3].follower[i]->username << " ";
-    // }
-    // cout << endl;
-
-    // refresh(server, "marstin");
-    // visit(server, "marstin", "paul.weng");
-    // visit(server, "marstin", "fyq990508");
-    // visit(server, "marstin", "yinguoxin2017");
-    // visit(server, "marstin", "marstin");
-    // visit(server, "paul.weng", "leepace666666");
-
-    // for (unsigned int i = 0; i < server.num_tags; i++)
-    // {
-    //     cout << server.tags[i].tag_content << endl;
-    // }
-    // cout << server.num_tags << endl;
 
     //-------Read log--------
     string lpath = string(logpath);
@@ -96,6 +53,7 @@ void simulation(const char *userpath, const char *logpath)
     {
         try
         {
+            buffer = "";
             getline(logfile, line_buffer);
             istringstream iStream;
             iStream.str(line_buffer);
@@ -447,12 +405,25 @@ void post(Server_t &server, string user1, string title, string tags[], string te
         server.users[user_1_i].posts[post_i].text = text;
         server.users[user_1_i].posts[post_i].num_comments = 0;
         server.users[user_1_i].posts[post_i].num_likes = 0;
-        server.users[user_1_i].posts[post_i].num_tags = tag_num;
+        server.users[user_1_i].posts[post_i].num_tags = 0;
         server.users[user_1_i].posts[post_i].owner = &(server.users[user_1_i]);
+        bool tag_not_exist;
         for (unsigned int tag_i = 0; tag_i < tag_num; ++tag_i)
         {
-            server.users[user_1_i].posts[post_i].tags[tag_i] = tags[tag_i];
-            addTagtoServer(tags[tag_i], server);
+            tag_not_exist = true;
+            for (unsigned int tags_partial_i = 0; tags_partial_i < server.users[user_1_i].posts[post_i].num_tags; tags_partial_i++)
+            {
+                if (server.users[user_1_i].posts[post_i].tags[tags_partial_i] == tags[tag_i])
+                {
+                    tag_not_exist = false;
+                }
+            }
+            if (tag_not_exist) // Prevent duplicate tags in one post
+            {
+                server.users[user_1_i].posts[post_i].tags[tag_i] = tags[tag_i];
+                addTagtoServer(tags[tag_i], server);
+                server.users[user_1_i].posts[post_i].num_tags++;
+            }
         }
         server.users[user_1_i].num_posts++;
     }
@@ -467,7 +438,7 @@ void unpost(Server_t &server, string user1, unsigned int post_id)
         ostringstream oStream;
         oStream << "Error: " << user1 << " cannot delete post #" << post_id << "!" << endl
                 << user1 << " does not have post #" << post_id << "." << endl;
-        throw Exception_t(CAPACITY_OVERFLOW, oStream.str());
+        throw Exception_t(INVALID_LOG, oStream.str());
     }
     else
     {
@@ -491,7 +462,7 @@ void comment(Server_t &server, string user1, string user2, unsigned int post_id,
         ostringstream oStream;
         oStream << "Error: " << user1 << " cannot comment post #" << post_id << " of " << user2 << "!" << endl
                 << user2 << " does not have post #" << post_id << "." << endl;
-        throw Exception_t(CAPACITY_OVERFLOW, oStream.str());
+        throw Exception_t(INVALID_LOG, oStream.str());
     }
     else
     {
@@ -506,40 +477,43 @@ void uncomment(Server_t &server, string user1, string user2, unsigned int post_i
 {
     cout << ">> uncomment" << endl;
     int user_2_i = findUser(user2, server);
-    if (server.users[user_2_i].num_posts < post_id)
+    if (user_2_i != -1) // Check whether this user exists.
     {
-        ostringstream oStream;
-        oStream << "Error: " << user1 << " cannot uncomment post #" << post_id << " of " << user2 << "!" << endl
-                << user2 << " does not have post #" << post_id << "." << endl;
-        throw Exception_t(CAPACITY_OVERFLOW, oStream.str());
-    }
-    else
-    {
-        if (server.users[user_2_i].posts[post_id - 1].num_comments < comment_id)
-        {
+        if (server.users[user_2_i].num_posts < post_id)
+        { // Whether user2 has post <post_id>.
             ostringstream oStream;
-            oStream << "Error: " << user1 << " cannot uncomment post #" << post_id << " of " << user2 << "!" << endl
-                    << "Post #" << post_id << " does not have comment #" << comment_id << "." << endl;
-            throw Exception_t(CAPACITY_OVERFLOW, oStream.str());
+            oStream << "Error: " << user1 << " cannot uncomment comment #" << comment_id << " of post #" << post_id << " posted by " << user2 << "!" << endl
+                    << user2 << " does not have post #" << post_id << "." << endl;
+            throw Exception_t(INVALID_LOG, oStream.str());
         }
         else
         {
-            if (server.users[user_2_i].posts[post_id - 1].comments[comment_id - 1].user->username != user1)
-            {
+            if (server.users[user_2_i].posts[post_id - 1].num_comments < comment_id)
+            { // Whether the post has comment <comment_id>.
                 ostringstream oStream;
-                oStream << "Error: " << user1 << " cannot uncomment post #" << post_id << " of " << user2 << "!" << endl
-                        << user1 << " is not the owner of comment #" << comment_id << "." << endl;
-                throw Exception_t(CAPACITY_OVERFLOW, oStream.str());
+                oStream << "Error: " << user1 << " cannot uncomment comment #" << comment_id << " of post #" << post_id << " posted by " << user2 << "!" << endl
+                        << "Post #" << post_id << " does not have comment #" << comment_id << "." << endl;
+                throw Exception_t(INVALID_LOG, oStream.str());
             }
             else
             {
-                for (unsigned int comment_i = comment_id - 1; comment_i < server.users[user_2_i].posts[post_id - 1].num_comments - 1; ++comment_i)
-                {
-                    server.users[user_2_i].posts[post_id - 1].comments[comment_i] = server.users[user_2_i].posts[post_id - 1].comments[comment_i + 1];
+                if (server.users[user_2_i].posts[post_id - 1].comments[comment_id - 1].user->username != user1)
+                { // Whether <user1> is the owner of the comment.
+                    ostringstream oStream;
+                    oStream << "Error: " << user1 << " cannot uncomment comment #" << comment_id << " of post #" << post_id << " posted by " << user2 << "!" << endl
+                            << user1 << " is not the owner of comment #" << comment_id << "." << endl;
+                    throw Exception_t(INVALID_LOG, oStream.str());
                 }
-                unsigned int comment_i = server.users[user_2_i].posts[post_id - 1].num_comments;
-                server.users[user_2_i].posts[post_id - 1].comments[comment_i - 1] = server.dummy_comment;
-                server.users[user_2_i].posts[post_id - 1].num_comments--;
+                else
+                {
+                    for (unsigned int comment_i = comment_id - 1; comment_i < server.users[user_2_i].posts[post_id - 1].num_comments - 1; ++comment_i)
+                    {
+                        server.users[user_2_i].posts[post_id - 1].comments[comment_i] = server.users[user_2_i].posts[post_id - 1].comments[comment_i + 1];
+                    }
+                    unsigned int comment_i = server.users[user_2_i].posts[post_id - 1].num_comments;
+                    server.users[user_2_i].posts[post_id - 1].comments[comment_i - 1] = server.dummy_comment;
+                    server.users[user_2_i].posts[post_id - 1].num_comments--;
+                }
             }
         }
     }
@@ -555,7 +529,7 @@ void like(Server_t &server, string user1, string user2, unsigned int post_id) //
         ostringstream oStream;
         oStream << "Error: " << user1 << " cannot like post #" << post_id << " of " << user2 << "!" << endl
                 << user2 << " does not have post #" << post_id << "." << endl;
-        throw Exception_t(CAPACITY_OVERFLOW, oStream.str());
+        throw Exception_t(INVALID_LOG, oStream.str());
     }
     else
     {
@@ -573,17 +547,17 @@ void like(Server_t &server, string user1, string user2, unsigned int post_id) //
             ostringstream oStream;
             oStream << "Error: " << user1 << " cannot like post #" << post_id << " of " << user2 << "!" << endl
                     << user1 << " has already liked post #" << post_id << " of " << user2 << "." << endl;
-            throw Exception_t(CAPACITY_OVERFLOW, oStream.str());
+            throw Exception_t(INVALID_LOG, oStream.str());
         }
         else
         {
-            unsigned int likers_i = server.users[user_2_i].posts[post_id - 1].num_likes; //TODO: ERROR HANDLING
+            unsigned int likers_i = server.users[user_2_i].posts[post_id - 1].num_likes;
             server.users[user_2_i].posts[post_id - 1].like_users[likers_i] = &(server.users[user_1_i]);
             server.users[user_2_i].posts[post_id - 1].num_likes++;
         }
     }
 }
-void unlike(Server_t &server, string user1, string user2, unsigned int post_id) // TODO: Test whether the last in sequence acts nornally.//TODO: Test whether relike overwrites the dummy successfully.
+void unlike(Server_t &server, string user1, string user2, unsigned int post_id)
 {
     cout << ">> unlike" << endl;
     int user_2_i = findUser(user2, server);
@@ -592,7 +566,7 @@ void unlike(Server_t &server, string user1, string user2, unsigned int post_id) 
         ostringstream oStream;
         oStream << "Error: " << user1 << " cannot unlike post #" << post_id << " of " << user2 << "!" << endl
                 << user2 << " does not have post #" << post_id << "." << endl;
-        throw Exception_t(CAPACITY_OVERFLOW, oStream.str());
+        throw Exception_t(INVALID_LOG, oStream.str());
     }
     else
     {
@@ -611,7 +585,7 @@ void unlike(Server_t &server, string user1, string user2, unsigned int post_id) 
             ostringstream oStream;
             oStream << "Error: " << user1 << " cannot unlike post #" << post_id << " of " << user2 << "!" << endl
                     << user1 << " has not liked post #" << post_id << " of " << user2 << "." << endl;
-            throw Exception_t(CAPACITY_OVERFLOW, oStream.str());
+            throw Exception_t(INVALID_LOG, oStream.str());
         }
         else
         {
@@ -633,55 +607,61 @@ void follow(Server_t &server, string user1, string user2) // User1 follow User2
     //TODO: INVALID FOLLOW
     int user_1_i = findUser(user1, server);
     int user_2_i = findUser(user2, server);
-    server.users[user_1_i].num_following++;
-    server.users[user_2_i].num_followers++;
-    unsigned int following_i = server.users[user_1_i].num_following - 1; // The index.
-    unsigned int followers_i = server.users[user_2_i].num_followers - 1;
-    server.users[user_1_i].following[following_i] = &(server.users[user_2_i]);
-    server.users[user_2_i].follower[followers_i] = &(server.users[user_1_i]);
+    if (user_1_i != -1 && user_2_i != -1) // In case user does not exist.
+    {
+
+        server.users[user_1_i].num_following++;
+        server.users[user_2_i].num_followers++;
+        unsigned int following_i = server.users[user_1_i].num_following - 1; // The index.
+        unsigned int followers_i = server.users[user_2_i].num_followers - 1;
+        server.users[user_1_i].following[following_i] = &(server.users[user_2_i]);
+        server.users[user_2_i].follower[followers_i] = &(server.users[user_1_i]);
+    }
 }
 
 void unfollow(Server_t &server, string user1, string user2) // User1 unfollow User2
 
 {
-    //TODO: CAPACITY_OVERFLOW
     cout << ">> unfollow" << endl;
     int user_1_i = findUser(user1, server);
     int user_2_i = findUser(user2, server);
-    bool is_following = false;
-    unsigned int user1_following_index = 0;
-    unsigned int user2_follower_index = 0;
-    for (unsigned int user2_follower_i = 0; user2_follower_i < server.users[user_2_i].num_followers; ++user2_follower_i)
+    if (user_1_i != -1 && user_2_i != -1) // In case user does not exist.
     {
-        if (server.users[user_2_i].follower[user2_follower_i]->username == user1)
+        bool is_following = false;
+        unsigned int user1_following_index = 0;
+        unsigned int user2_follower_index = 0;
+        for (unsigned int user2_follower_i = 0; user2_follower_i < server.users[user_2_i].num_followers; ++user2_follower_i)
         {
-            is_following = true;
-            user2_follower_index = user2_follower_i;
-        }
-    } // First traverse all followers of user2, confirming user1 is in it and also getting index.
-    if (is_following)
-    {
-        for (unsigned int user2_follower_i = user2_follower_index; user2_follower_i < server.users[user_2_i].num_followers - 1; ++user2_follower_i)
+            if (server.users[user_2_i].follower[user2_follower_i]->username == user1)
+            {
+                is_following = true;
+                user2_follower_index = user2_follower_i;
+            }
+        } // First traverse all followers of user2, confirming user1 is in it and also getting index.
+        if (is_following)
         {
-            server.users[user_2_i].follower[user2_follower_i] = server.users[user_2_i].follower[user2_follower_i + 1];
+            for (unsigned int user2_follower_i = user2_follower_index; user2_follower_i < server.users[user_2_i].num_followers - 1; ++user2_follower_i)
+            {
+                server.users[user_2_i].follower[user2_follower_i] = server.users[user_2_i].follower[user2_follower_i + 1];
+            }
         }
-    }
-    for (unsigned int user1_following_i = 0; user1_following_i < server.users[user_1_i].num_following; ++user1_following_i)
-    {
-        if (server.users[user_1_i].following[user1_following_i]->username == user2)
+        for (unsigned int user1_following_i = 0; user1_following_i < server.users[user_1_i].num_following; ++user1_following_i)
         {
-            user1_following_index = user1_following_i;
+            if (server.users[user_1_i].following[user1_following_i]->username == user2)
+            {
+                user1_following_index = user1_following_i;
+            }
         }
-    }
-    for (unsigned int user1_following_i = user1_following_index; user1_following_i < server.users[user_1_i].num_following - 1; ++user1_following_i)
-    {
+        for (unsigned int user1_following_i = user1_following_index; user1_following_i < server.users[user_1_i].num_following - 1; ++user1_following_i)
+        {
 
-        server.users[user_1_i].following[user1_following_i] = server.users[user_1_i].following[user1_following_i + 1];
+            server.users[user_1_i].following[user1_following_i] = server.users[user_1_i].following[user1_following_i + 1];
+        }
+        server.users[user_1_i].num_following--;
+        server.users[user_2_i].num_followers--;
+        server.users[user_1_i].following[server.users[user_1_i].num_following] = &(server.dummy_user);
+        server.users[user_2_i].follower[server.users[user_2_i].num_followers] = &(server.dummy_user);
     }
-    server.users[user_1_i].num_following--;
-    server.users[user_2_i].num_followers--;
-    server.users[user_1_i].following[server.users[user_1_i].num_following] = &(server.dummy_user);
-    server.users[user_2_i].follower[server.users[user_2_i].num_followers] = &(server.dummy_user);
 }
 
 void refresh(Server_t &server, string user)
@@ -702,10 +682,6 @@ void refresh(Server_t &server, string user)
             }
         }
     }
-    else
-    {
-        //TODO: Handle USER_NOT_EXIST;
-    }
 }
 
 void visit(Server_t &server, string user1, string user2) // User1 visit User2
@@ -714,46 +690,44 @@ void visit(Server_t &server, string user1, string user2) // User1 visit User2
     cout << user2 << endl;
     int user_1_i = findUser(user1, server);
     int user_2_i = findUser(user2, server);
-    // TODO: Handle USER_NOT_EXIST;
-    string relationship_status = "";
-    if (user1 != user2)
+    if (user_1_i != -1 && user_2_i != -1) // In case user does not exist.
     {
-        bool isFollowingUser2 = false;
-        bool isFollowedByUser2 = false;
-        for (unsigned int following_i = 0; following_i < server.users[user_2_i].num_following; following_i++)
+        string relationship_status = "";
+        if (user1 != user2)
         {
-            if (server.users[user_2_i].following[following_i]->username == user1)
+            bool isFollowingUser2 = false;
+            bool isFollowedByUser2 = false;
+            for (unsigned int following_i = 0; following_i < server.users[user_2_i].num_following; following_i++)
             {
-                isFollowedByUser2 = true;
+                if (server.users[user_2_i].following[following_i]->username == user1)
+                {
+                    isFollowedByUser2 = true;
+                }
+            }
+            for (unsigned int followed_i = 0; followed_i < server.users[user_1_i].num_following; followed_i++)
+            {
+                if (server.users[user_1_i].following[followed_i]->username == user2)
+                {
+                    isFollowingUser2 = true;
+                }
+            }
+            if (isFollowedByUser2 && isFollowingUser2)
+            {
+                relationship_status = "friend\n";
+            }
+            else if ((!isFollowedByUser2) && isFollowingUser2)
+            {
+                relationship_status = "following\n";
+            }
+            else if (!isFollowingUser2)
+            {
+                relationship_status = "stranger\n";
             }
         }
-        for (unsigned int followed_i = 0; followed_i < server.users[user_1_i].num_following; followed_i++)
-        {
-            if (server.users[user_1_i].following[followed_i]->username == user2)
-            {
-                isFollowingUser2 = true;
-            }
-        }
-        if (isFollowedByUser2 && isFollowingUser2)
-        {
-            relationship_status = "friend\n";
-        }
-        else if ((!isFollowedByUser2) && isFollowingUser2)
-        {
-            relationship_status = "following\n";
-        }
-        else if (isFollowedByUser2 && (!isFollowingUser2))
-        {
-            relationship_status = "followed\n";
-        }
-        else if ((!isFollowedByUser2) && (!isFollowingUser2))
-        {
-            relationship_status = "stranger\n";
-        }
+        cout << relationship_status;
+        cout << "Followers: " << server.users[user_2_i].num_followers << endl;
+        cout << "Following: " << server.users[user_2_i].num_following << endl;
     }
-    cout << relationship_status;
-    cout << "Followers: " << server.users[user_2_i].num_followers << endl;
-    cout << "Following: " << server.users[user_2_i].num_following << endl;
 }
 
 void trending(Server_t &server, unsigned int trending_count)
@@ -812,6 +786,18 @@ void updateTagScore(Server_t &server)
                     server.tags[tag_index].tag_score += (POST_SCORE + COMT_SCORE * server.users[user_i].posts[post_i].num_comments + LIKE_SCORE * server.users[user_i].posts[post_i].num_likes); // See server_type.h for const defs.
                 }
             }
+        }
+    }
+    for (unsigned int tag_index = 0; tag_index < server.num_tags; tag_index++)
+    {
+        if (server.tags[tag_index].tag_score == 0)
+        {
+            for (unsigned int tag_i = tag_index; tag_i < server.num_tags - 1; ++tag_i)
+            {
+                server.tags[tag_i] = server.tags[tag_i + 1];
+            }
+            server.tags[server.num_tags - 1].tag_content = "";
+            server.num_tags--;
         }
     }
 }

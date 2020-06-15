@@ -138,7 +138,7 @@ Post #1 does not have comment #1.
 Error: marstin cannot uncomment comment #2 of post #1 posted by zhuzhuoer!
 Post #1 does not have comment #2.
 >> uncomment
-Error: marstin cannot uncomment comment #1 of post #2 posted by zhuzhuoer!
+Error: marstin cannot uncomment post #2 of zhuzhuoer!
 zhuzhuoer does not have post #2.
 >> comment
 >> uncomment
@@ -173,12 +173,17 @@ zhuzhuoer: VE280 is a foundation for future courses.
 >> unlike
 Error: marstin cannot unlike post #1 of zhuzhuoer!
 marstin has not liked post #1 of zhuzhuoer.
+>> like
+Error: marstin cannot like post #2 of zhuzhuoer!
+zhuzhuoer does not have post #2.
 >> unlike
 Error: marstin cannot unlike post #2 of zhuzhuoer!
 zhuzhuoer does not have post #2.
+>> like
+>> like
+Error: marstin cannot like post #1 of zhuzhuoer!
+marstin has already liked post #1 of zhuzhuoer.
 >> unlike
-Error: marstin cannot unlike post #1 of zhuzhuoer!
-marstin has not liked post #1 of zhuzhuoer.
 >> trending
 1 VE280: 56
 2 SU2020: 42

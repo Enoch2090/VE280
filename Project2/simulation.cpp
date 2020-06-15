@@ -279,8 +279,10 @@ void readUserInfo(Server_t &server)
             server.users[user_i].posts[post_i].title = buffer;
             // cout << buffer << endl; // XXX: CONS
             unsigned int tags_i = 0;
+            bool tag_not_exist;
             while (post_info >> buffer)
             {
+                tag_not_exist = true;
                 if ((buffer.find("#") == 0) && (buffer.rfind("#") == buffer.length() - 1))
                 {
                     string capacityObject = "tags";
@@ -293,9 +295,19 @@ void readUserInfo(Server_t &server)
                         throw exception;
                     }
                     string tag_str = buffer.substr(1, buffer.length() - 2);
-                    server.users[user_i].posts[post_i].tags[tags_i] = tag_str;
-                    addTagtoServer(tag_str, server); // Also add to server's tag lib.
-                    tags_i++;
+                    for (unsigned int tags_partial_i = 0; tags_partial_i < server.users[user_i].posts[post_i].num_tags; tags_partial_i++)
+                    {
+                        if (server.users[user_i].posts[post_i].tags[tags_partial_i] == tag_str)
+                        {
+                            tag_not_exist = false;
+                        }
+                    }
+                    if (tag_not_exist)
+                    {
+                        server.users[user_i].posts[post_i].tags[tags_i] = tag_str;
+                        addTagtoServer(tag_str, server); // Also add to server's tag lib.
+                        tags_i++;
+                    }
                 }
                 else
                 {
@@ -494,21 +506,41 @@ void uncomment(Server_t &server, string user1, string user2, unsigned int post_i
 {
     cout << ">> uncomment" << endl;
     int user_2_i = findUser(user2, server);
-    if (server.users[user_2_i].num_posts < post_id || server.users[user_2_i].posts[post_id - 1].num_comments < comment_id)
+    if (server.users[user_2_i].num_posts < post_id)
     {
-        //cout << "ERROR" << endl; //TODO: ERROR HANDLING
+        ostringstream oStream;
+        oStream << "Error: " << user1 << " cannot uncomment post #" << post_id << " of " << user2 << "!" << endl
+                << user2 << " does not have post #" << post_id << "." << endl;
+        throw Exception_t(CAPACITY_OVERFLOW, oStream.str());
     }
     else
     {
-        if (server.users[user_2_i].posts[post_id - 1].comments[comment_id - 1].user->username == user1)
+        if (server.users[user_2_i].posts[post_id - 1].num_comments < comment_id)
         {
-            for (unsigned int comment_i = comment_id - 1; comment_i < server.users[user_2_i].posts[post_id - 1].num_comments - 1; ++comment_i)
+            ostringstream oStream;
+            oStream << "Error: " << user1 << " cannot uncomment post #" << post_id << " of " << user2 << "!" << endl
+                    << "Post #" << post_id << " does not have comment #" << comment_id << "." << endl;
+            throw Exception_t(CAPACITY_OVERFLOW, oStream.str());
+        }
+        else
+        {
+            if (server.users[user_2_i].posts[post_id - 1].comments[comment_id - 1].user->username != user1)
             {
-                server.users[user_2_i].posts[post_id - 1].comments[comment_i] = server.users[user_2_i].posts[post_id - 1].comments[comment_i + 1];
+                ostringstream oStream;
+                oStream << "Error: " << user1 << " cannot uncomment post #" << post_id << " of " << user2 << "!" << endl
+                        << user1 << " is not the owner of comment #" << comment_id << "." << endl;
+                throw Exception_t(CAPACITY_OVERFLOW, oStream.str());
             }
-            unsigned int comment_i = server.users[user_2_i].posts[post_id - 1].num_comments;
-            server.users[user_2_i].posts[post_id - 1].comments[comment_i - 1] = server.dummy_comment;
-            server.users[user_2_i].posts[post_id - 1].num_comments--;
+            else
+            {
+                for (unsigned int comment_i = comment_id - 1; comment_i < server.users[user_2_i].posts[post_id - 1].num_comments - 1; ++comment_i)
+                {
+                    server.users[user_2_i].posts[post_id - 1].comments[comment_i] = server.users[user_2_i].posts[post_id - 1].comments[comment_i + 1];
+                }
+                unsigned int comment_i = server.users[user_2_i].posts[post_id - 1].num_comments;
+                server.users[user_2_i].posts[post_id - 1].comments[comment_i - 1] = server.dummy_comment;
+                server.users[user_2_i].posts[post_id - 1].num_comments--;
+            }
         }
     }
 }

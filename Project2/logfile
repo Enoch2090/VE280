@@ -1,25 +1,22 @@
-marstin refresh
-trending 5
+trending 3
 zhuzhuoer visit marstin
 zhuzhuoer follow marstin
-marstin follow zhuzhuoer
-marstin refresh
+zhuzhuoer refresh
 zhuzhuoer post
 Writing Project 2
 #VE280#
 I am writing the sample code for ve280 project 2.
+marstin follow zhuzhuoer
 marstin like zhuzhuoer 1
 zhuzhuoer refresh
-marstin visit zhuzhuoer
 marstin comment zhuzhuoer 1
 Ummm, good luck dude.
 marstin refresh
+trending 5
 marstin unlike zhuzhuoer 1
 marstin unlike zhuzhuoer 1
-zhuzhuoer refresh
 marstin uncomment zhuzhuoer 1 1
 zhuzhuoer refresh
 zhuzhuoer delete 1
-marstin refresh
 marstin unfollow zhuzhuoer
 marstin refresh

@@ -685,7 +685,7 @@ void visit(Server_t &server, string user1, string user2) // User1 visit User2
     int user_2_i = findUser(user2, server);
     if (user_1_i != -1 && user_2_i != -1) // In case user does not exist.
     {
-        string relationship_status = "";
+        string relationship_status = "\n";
         if (user1 != user2)
         {
             bool isFollowingUser2 = false;

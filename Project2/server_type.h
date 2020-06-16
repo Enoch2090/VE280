@@ -1,6 +1,7 @@
 /*
  * This is VE280 Project 2, SU2020.
- * Written by Ziqiao Ma and Zhuoer Zhu.
+ * Header and starter files written by Ziqiao Ma and Zhuoer Zhu.
+ * The rest of the shitty code is written by Yucheng Gu.
  * Latest Update: 5/29/2020.
  * All rights reserved.
  */
@@ -65,9 +66,6 @@ struct Tag_t;
 struct Post_t;
 struct User_t;
 
-/* TODO: Declare any additional compound types here */
-
-/* Compound Types Definition */
 struct Comment_t
 /*
 // Type: Comment_t
@@ -155,12 +153,18 @@ struct Server_t
 // It consists of:
 // * users: An array of users
 // * num_users: the number of users
+// * num_tags: the number of tags
+// * dummy_user: an empty user
+// * dummy_post: an empty post
+// * dummy_comment: an empty comment
+// * 
+// *
 */
 {
     User_t users[MAX_USERS];
+    Tag_t tags[MAX_TAGS * MAX_POSTS * MAX_USERS];
     User_t dummy_user;
     Post_t dummy_post;
-    Tag_t tags[MAX_TAGS * MAX_POSTS * MAX_USERS];
     Comment_t dummy_comment;
     unsigned int num_users;
     unsigned int num_tags;

@@ -7,7 +7,6 @@
 
 #include "simulation.h"
 using namespace std;
-// TODO: Define your functions
 /* Simulation Processing Functions */
 
 void simulation(const char *userpath, const char *logpath)
@@ -48,7 +47,6 @@ void simulation(const char *userpath, const char *logpath)
     string comment_content;
     unsigned int post_id;
     unsigned int comment_id;
-    //bool receivePost = false;
     while (logfile.peek() != EOF)
     {
         try
@@ -58,7 +56,7 @@ void simulation(const char *userpath, const char *logpath)
             istringstream iStream;
             iStream.str(line_buffer);
             iStream >> buffer;
-            if (buffer == "trending")
+            if (buffer == "trending") // Trending is the only command that starts with the command keyword.
             {
                 unsigned int trending_count;
                 iStream >> trending_count;
@@ -66,7 +64,7 @@ void simulation(const char *userpath, const char *logpath)
             }
             else
             {
-                user1 = buffer;
+                user1 = buffer; // If it's not trending, then the first keyword must be the username.
                 iStream >> buffer;
                 if (buffer == "refresh")
                 {
@@ -85,15 +83,14 @@ void simulation(const char *userpath, const char *logpath)
                 else if (buffer == "unfollow")
                 {
                     iStream >> user2;
-                    unfollow(server, user1, user2); // TODO: UNFO
+                    unfollow(server, user1, user2);
                 }
-                else if (buffer == "post")
+                else if (buffer == "post") // Assume the command is valid, i.e. there are exactly one line of title and one line of post body after the tags.
                 {
                     getline(logfile, post_title);
                     unsigned int tags_i = 0;
                     while (logfile >> buffer)
                     {
-                        //TODO: Check capacity
                         if ((buffer.find("#") == 0) && (buffer.rfind("#") == buffer.length() - 1))
                         {
                             post_tags[tags_i] = buffer.substr(1, buffer.length() - 2);
@@ -108,7 +105,7 @@ void simulation(const char *userpath, const char *logpath)
                     post_body = buffer + buffer2;
                     post(server, user1, post_title, post_tags, post_body, tags_i);
                 }
-                else if (buffer == "delete")
+                else if (buffer == "delete") // Other situations all similar.
                 {
                     iStream >> post_id;
                     unpost(server, user1, post_id);
@@ -135,7 +132,7 @@ void simulation(const char *userpath, const char *logpath)
                     uncomment(server, user1, user2, post_id, comment_id);
                 }
             }
-            //console(server);
+            //console(server); // Uncomment this to see the entire server after each run.
         }
         catch (const Exception_t &exception)
         {
@@ -187,7 +184,6 @@ void serverInit(Server_t &server, const char *fpath)
 
 void readUserInfo(Server_t &server)
 {
-    //TODO: INIT DUMMIES
     for (unsigned int user_i = 0; user_i < server.num_users; user_i++)
     {
         string userinfo_dir = server.fpath + server.users[user_i].username;
@@ -205,7 +201,6 @@ void readUserInfo(Server_t &server)
         // Get posts
         unsigned int num_posts;
         user_info >> num_posts;
-        // cout << server.users[user_i].username << " posts: " << num_posts << endl; // XXX: CONS
         string capacityObject = "posts";
         try
         {
@@ -235,7 +230,6 @@ void readUserInfo(Server_t &server)
             string buffer;
             getline(post_info, buffer);
             server.users[user_i].posts[post_i].title = buffer;
-            // cout << buffer << endl; // XXX: CONS
             unsigned int tags_i = 0;
             bool tag_not_exist;
             while (post_info >> buffer)
@@ -276,13 +270,11 @@ void readUserInfo(Server_t &server)
             getline(post_info, buffer2);
             server.users[user_i].posts[post_i].num_tags = tags_i;
             server.users[user_i].posts[post_i].text = buffer + buffer2;
-            // cout << server.users[user_i].username << " post " << buffer + buffer2 << " tag " << tags_i << endl; // XXX: CONS
 
             // Title, tags and text.
 
             unsigned int num_likes;
             post_info >> num_likes;
-            // cout << "-likes: " << num_likes << endl; // XXX: CONS
             string capacityObject = "likes";
             try
             {
@@ -302,12 +294,10 @@ void readUserInfo(Server_t &server)
                 {
                     server.users[user_i].posts[post_i].like_users[likes_i] = &(server.users[liker_i]);
                 }
-                // cout << buffer << endl; // XXX: CONS
             }
             // Likes
             unsigned int num_comments;
             post_info >> num_comments;
-            // cout << "comments: " << num_comments << endl; // XXX: CONS
             capacityObject = "comments";
             try
             {
@@ -323,7 +313,6 @@ void readUserInfo(Server_t &server)
             {
                 getline(post_info, buffer);
                 int commentor_i = findUser(buffer, server);
-                // cout << buffer << ": " << endl; // XXX: CONS
                 getline(post_info, buffer);
                 string comment_content = buffer;
                 if (commentor_i != -1)
@@ -331,14 +320,12 @@ void readUserInfo(Server_t &server)
                     server.users[user_i].posts[post_i].comments[comments_i].user = &(server.users[commentor_i]);
                     server.users[user_i].posts[post_i].comments[comments_i].text = comment_content;
                 }
-                // cout << buffer << endl; // XXX: CONS
             }
             post_info.close();
         }
         // Get following
         unsigned int num_following;
         user_info >> num_following;
-        // cout << "-following: " << num_following << endl; // XXX: CONS
         capacityObject = "followings";
         try
         {
@@ -348,7 +335,6 @@ void readUserInfo(Server_t &server)
         {
             throw exception;
         }
-
         server.users[user_i].num_following = num_following;
         user_info.get();
         for (unsigned int following_i = 0; following_i < num_following; following_i++)
@@ -359,14 +345,12 @@ void readUserInfo(Server_t &server)
             {
                 server.users[user_i].following[following_i] = &(server.users[following_user_i]);
             }
-            // cout << buffer << endl; // XXX: CONS
         }
 
         // Get followers
         unsigned int num_followers;
         user_info >> num_followers;
         capacityObject = "followers";
-        // cout << "-follower: " << num_followers << endl; // XXX: CONS
         capacityObject = "followers";
         try
         {
@@ -386,16 +370,13 @@ void readUserInfo(Server_t &server)
             {
                 server.users[user_i].follower[followers_i] = &(server.users[follower_user_i]);
             }
-            // cout << buffer << endl;// XXX: CONS
         }
         user_info.close();
-        // cout << "--------" << endl; // XXX: CONS
     }
 }
 
 void post(Server_t &server, string user1, string title, string tags[], string text, unsigned int tag_num)
 {
-    //TODO: CHECK CAPACITY
     cout << ">> post" << endl;
     int user_1_i = findUser(user1, server);
     if (user_1_i != -1)
@@ -442,7 +423,7 @@ void unpost(Server_t &server, string user1, unsigned int post_id)
     }
     else
     {
-
+        // Delete post
         for (unsigned int user1_post_i = post_id - 1; user1_post_i < server.users[user_1_i].num_posts - 1; ++user1_post_i)
         {
             server.users[user_1_i].posts[user1_post_i] = server.users[user_1_i].posts[user1_post_i + 1];
@@ -466,6 +447,7 @@ void comment(Server_t &server, string user1, string user2, unsigned int post_id,
     }
     else
     {
+        // Allow multiple comments.
         unsigned int comment_i = server.users[user_2_i].posts[post_id - 1].num_comments;
         server.users[user_2_i].posts[post_id - 1].comments[comment_i].text = comment_body;
         server.users[user_2_i].posts[post_id - 1].comments[comment_i].user = &(server.users[user_1_i]);
@@ -557,6 +539,7 @@ void like(Server_t &server, string user1, string user2, unsigned int post_id) //
         }
     }
 }
+
 void unlike(Server_t &server, string user1, string user2, unsigned int post_id)
 {
     cout << ">> unlike" << endl;
@@ -603,19 +586,29 @@ void unlike(Server_t &server, string user1, string user2, unsigned int post_id)
 void follow(Server_t &server, string user1, string user2) // User1 follow User2
 {
     cout << ">> follow" << endl;
-    //TODO: CAPACITY_OVERFLOW
-    //TODO: INVALID FOLLOW
+    // Note that we don't prevent a user from following him/herself. If we need so, check user1==user2 here.
     int user_1_i = findUser(user1, server);
     int user_2_i = findUser(user2, server);
     if (user_1_i != -1 && user_2_i != -1) // In case user does not exist.
     {
+        bool is_following = false;
+        for (unsigned int user2_follower_i = 0; user2_follower_i < server.users[user_2_i].num_followers; ++user2_follower_i) // First traverse all followers of user2, confirming user1 is not in it.
+        {
+            if (server.users[user_2_i].follower[user2_follower_i]->username == user1)
+            {
+                is_following = true;
+            }
+        }
 
-        server.users[user_1_i].num_following++;
-        server.users[user_2_i].num_followers++;
-        unsigned int following_i = server.users[user_1_i].num_following - 1; // The index.
-        unsigned int followers_i = server.users[user_2_i].num_followers - 1;
-        server.users[user_1_i].following[following_i] = &(server.users[user_2_i]);
-        server.users[user_2_i].follower[followers_i] = &(server.users[user_1_i]);
+        if (!is_following) // Error handling can be added in the correponding else block. Since we define double follow as harmless action, it is simply ommited here.
+        {
+            server.users[user_1_i].num_following++;
+            server.users[user_2_i].num_followers++;
+            unsigned int following_i = server.users[user_1_i].num_following - 1; // The index.
+            unsigned int followers_i = server.users[user_2_i].num_followers - 1;
+            server.users[user_1_i].following[following_i] = &(server.users[user_2_i]);
+            server.users[user_2_i].follower[followers_i] = &(server.users[user_1_i]);
+        }
     }
 }
 
@@ -668,7 +661,7 @@ void refresh(Server_t &server, string user)
 {
     cout << ">> refresh" << endl;
     int user_i = findUser(user, server);
-    if (user_i != -1)
+    if (user_i != -1) // Make sure user is valid.
     {
         for (unsigned int post_i = 0; post_i < server.users[user_i].num_posts; post_i++)
         {
@@ -735,7 +728,6 @@ void trending(Server_t &server, unsigned int trending_count)
     cout << ">> trending" << endl;
     updateTagScore(server);
     sortTagsbyScore(server);
-    // cout << server.num_tags << endl; // XXX: CONS
     if (server.num_tags > trending_count)
     {
         for (unsigned int tag_i = server.num_tags - 1; tag_i > server.num_tags - trending_count - 1; tag_i--)
@@ -788,7 +780,7 @@ void updateTagScore(Server_t &server)
             }
         }
     }
-    for (unsigned int tag_index = 0; tag_index < server.num_tags; tag_index++)
+    for (unsigned int tag_index = 0; tag_index < server.num_tags; tag_index++) // If any tag has no score, then it is an obsolete tag. Delete it here.
     {
         if (server.tags[tag_index].tag_score == 0)
         {
@@ -813,7 +805,7 @@ void addTagtoServer(const string tagname, Server_t &server)
     }
 }
 
-void sortTagsbyScore(Server_t &server) //XXX: Better sort algoritm? Bubble costs too much.
+void sortTagsbyScore(Server_t &server) //XXX: Better sort algoritm can be used here. For this project, bubble sort is enough, since there aren't many tags.
 {
     if (server.num_tags > 1)
     {
@@ -936,7 +928,7 @@ void checkCapacity(unsigned int in_capacity, string capacityObject, string error
 void printUser(User_t &user, const string &relationship)
 {
     cout << user.username << endl;
-    cout << relationship << endl;
+    cout << relationship << endl; // See the "visit" part
     cout << "Followers: " << user.num_followers
          << "\nFollowing: " << user.num_following << endl;
 }
@@ -947,7 +939,7 @@ void printPost(Post_t &post)
     cout << post.title << endl;
     cout << post.text << endl;
     cout << "Tags: ";
-    for (unsigned int i = 0; i < post.num_tags; ++i)
+    for (unsigned int i = 0; i < post.num_tags; ++i) // Print each tag.
     {
         cout << post.tags[i] << " ";
     }
@@ -966,13 +958,14 @@ void printPost(Post_t &post)
 
 void printTag(const Tag_t &tag, unsigned int rank)
 {
-    cout << rank << " " << tag.tag_content << ": " << tag.tag_score << endl;
+    cout << rank << " " << tag.tag_content << ": " << tag.tag_score << endl; // Print the rank first.
 };
 
 void console(Server_t &server)
 {
-    for (unsigned int i = 0; i < server.num_users; i++) // XXX: CONSOLE
+    for (unsigned int i = 0; i < server.num_users; i++)
     {
+        // Username, followings, followers.
         cout << server.users[i].username << " following " << server.users[i].num_following << ": " << endl;
         if (server.users[i].num_following > 0)
         {
@@ -984,7 +977,7 @@ void console(Server_t &server)
         }
     }
     cout << "-+-+-+-+-+-+-+-+-" << endl;
-    for (unsigned int i = 0; i < server.num_users; i++) // XXX: CONSOLE
+    for (unsigned int i = 0; i < server.num_users; i++)
     {
         cout << server.users[i].username << " follower " << server.users[i].num_followers << ": " << endl;
         if (server.users[i].num_followers > 0)
@@ -997,8 +990,9 @@ void console(Server_t &server)
         }
     }
     cout << "-+-+-+-+-+-+-+-+-" << endl;
-    for (unsigned int i = 0; i < server.num_users; i++) // XXX: CONSOLE
+    for (unsigned int i = 0; i < server.num_users; i++)
     {
+        // Posts
         if (server.users[i].num_posts > 0)
         {
             cout << server.users[i].username << " posts:" << endl;

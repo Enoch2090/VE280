@@ -3,18 +3,19 @@
 
 #include "card.h"
 
-class DeckEmpty { // An exception type
+class DeckEmpty
+{ // An exception type
 };
 
 const int DeckSize = 52;
 
-class Deck {
+class Deck
+{
     // A standard deck of 52 playing cards---no jokers
-    Card      deck[DeckSize];   // The deck of cards
-    int       next;             // The next card to deal
+    Card deck[DeckSize]; // The deck of cards
+    int next;            // The next card to deal
 
- public:
-
+public:
     Deck();
     // EFFECTS: constructs a "newly opened" deck of cards.  first the
     // spades from 2-A, then the hearts, then the clubs, then the
@@ -54,6 +55,8 @@ class Deck {
     int cardsLeft();
     // EFFECTS: returns the number of cards in the deck that have not
     // been dealt since the last reset/shuffle.
+
+    void printDeck();
 };
 
 #endif /* __DECK_H__ */

@@ -39,3 +39,8 @@ void Hand::addCard(Card c) // TODO: change to soft?
         this->curValue.soft = false;
     }
 }
+
+HandValue Hand::handValue() const
+{
+    return this->curValue;
+}

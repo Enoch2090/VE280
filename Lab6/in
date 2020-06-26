@@ -1,0 +1,17 @@
+16
+ProgramNode 1
+DeclListNode 1
+FnDeclNode 4
+VoidNode 0
+IdNode 0 f
+FormalsListNode 0
+FnBodyNode 2
+DeclListNode 1
+StmtListNode 1
+VarDeclNode 2
+AssignStmtNode 1
+IntNode 0
+IdNode 0 a
+AssignNode 2
+IdNode 0 a
+IntLitNode 0 1

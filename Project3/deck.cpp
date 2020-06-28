@@ -75,7 +75,7 @@ int Deck::cardsLeft()
     return (52 - this->next);
 }
 
-void Deck::printDeck()
+void Deck::printDeck() // XXX: CONSOLE
 {
     while (this->cardsLeft() > 0)
     {

@@ -7,13 +7,15 @@
 
 #include "course.h"
 
-int main() {
+int main()
+{
 
     Course *ve281 = create("Technical", "VE281", false, 0);
     Course *ve370 = create("Technical", "VE370", false, 0);
     Course *ve482 = create("Upper Level Technical", "VE482", true, 10);
 
-    try{
+    try
+    {
         ve482->updateTask("Homework", 1, 9, 20);
         ve482->updateTask("Lab", 1, 9, 15);
         ve482->print();
@@ -43,8 +45,34 @@ int main() {
         ve370->finishTask("Homework", 1, 9, 30);
         ve370->updateTask("Homework", 2, 10, 15);
         ve370->print();
+        // ve482->updateTask("Lab", 1, 9, 15);
+
+        // ve482->updateTask("Lab", 2, 9, 30);
+
+        // ve482->finishTask("Lab", 1, 9, 13);
+
+        // ve482->updateTask("Project", 1, 9, 30);
+
+        // ve482->updateTask("Lab", 3, 10, 1);
+
+        // ve482->finishTask("Lab", 2, 9, 15);
+
+        // ve482->updateTask("Project", 1, 10, 7);
+
+        // ve482->print();
+
+        // ve482->updateTask("Lab", 4, 10, 10);
+        // ve482->print();
+
+        // ve482->updateTask("Lab", 3, 10, 1);
+        // ve482->print();
+
+        // ve482->finishTask("Lab", 3, 9, 27);
+
+        // ve482->print();
     }
-    catch(tooManyTasks){
+    catch (tooManyTasks)
+    {
         std::cout << "Too many tasks\n";
     }
 
@@ -54,4 +82,3 @@ int main() {
 
     return 0;
 }
-

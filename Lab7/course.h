@@ -5,13 +5,19 @@
 
 #ifndef COURSE_H
 #define COURSE_H
-
+#include <iostream>
 // an exception class
-class tooManyTasks{};
+class tooManyTasks
+{
+};
 
-class Course{
+class Course
+{
 public:
-    // TODO: declare methods and destructor here
+    virtual ~Course(){};
+    virtual void updateTask(const std::string &type, int index, int due_month, int due_day) = 0;
+    virtual void finishTask(const std::string &type, int index, int finish_month, int finish_day) = 0;
+    virtual void print() = 0;
 };
 
 Course *create(const std::string &class_type, const std::string &course_code, bool assign_size, int tasks_size);

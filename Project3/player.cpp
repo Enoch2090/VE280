@@ -28,8 +28,8 @@ int SimplePlayer::bet(unsigned int bankroll, unsigned int minimum)
 
 bool SimplePlayer::draw(Card dealer, const Hand &player)
 {
-    bool hit;
-    if (!player.handValue().soft)
+    bool hit = false;
+    if (!player.handValue().soft) // hard count
     {
         if (player.handValue().count <= 11)
         {
@@ -48,7 +48,7 @@ bool SimplePlayer::draw(Card dealer, const Hand &player)
         }
         else if ((player.handValue().count >= 13) && (player.handValue().count <= 16))
         {
-            if (dealer.spot >= 0 && dealer.spot <= 4) // 4, 5, 6
+            if (dealer.spot >= 0 && dealer.spot <= 4) // 2, 3, 4, 5, 6
             {
                 hit = false;
             }
@@ -62,7 +62,7 @@ bool SimplePlayer::draw(Card dealer, const Hand &player)
             hit = false;
         }
     }
-    else
+    else // soft count
     {
         if (player.handValue().count <= 17)
         {
@@ -87,13 +87,21 @@ bool SimplePlayer::draw(Card dealer, const Hand &player)
     return hit;
 }
 
+void SimplePlayer::expose(Card c)
+{
+    // YAY
+}
+void SimplePlayer::shuffled()
+{
+    // YAYAY
+}
 //----Definition for the Counting Player----
 
 int CountPlayer::bet(unsigned int bankroll, unsigned int minimum)
 {
     if (this->count >= 2)
     {
-        return (bankroll >= minimum * 2 ? minimum * 2 : minimum);
+        return ((bankroll >= minimum * 2) ? (minimum * 2) : minimum);
     }
     else
     {

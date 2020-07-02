@@ -2,7 +2,7 @@
 Hand::Hand()
 {
     this->curValue.count = 0;
-    this->curValue.soft = true;
+    this->curValue.soft = false;
 }
 
 void Hand::discardAll()

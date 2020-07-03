@@ -3,5 +3,10 @@
         "random": "cpp",
         "iostream": "cpp",
         "ostream": "cpp"
-    }
+    },
+    "latex-workshop.view.pdf.external.viewer.command": "/usr/local/bin/displayline",
+    "latex-workshop.view.pdf.external.viewer.args": [
+        "0",
+        "%PDF%"
+    ]
 }

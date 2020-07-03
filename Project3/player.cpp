@@ -1,5 +1,5 @@
 #include "player.h"
-
+#include <iostream>
 class SimplePlayer : public Player
 {
 public:
@@ -99,6 +99,7 @@ void SimplePlayer::shuffled()
 
 int CountPlayer::bet(unsigned int bankroll, unsigned int minimum)
 {
+    //std::cout << this->count;
     if (this->count >= 2)
     {
         return ((bankroll >= minimum * 2) ? (minimum * 2) : minimum);
@@ -116,11 +117,11 @@ void CountPlayer::shuffled()
 
 void CountPlayer::expose(Card c)
 {
-    if (c.spot >= 8 && c.spot <= 12)
+    if (c.spot >= 8 && c.spot <= 12) // 10 ~ ACE
     {
         this->count--;
     }
-    else if (c.spot >= 0 && c.spot <= 4)
+    else if (c.spot >= 0 && c.spot <= 4) // 2 ~ 6
     {
         this->count++;
     }

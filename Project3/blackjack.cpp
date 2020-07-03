@@ -11,16 +11,18 @@ void deal_toplayer(Player *player, Hand &player_h, Deck &deck)
     cout << "Player dealt " << SpotNames[dealt_card.spot] << " of " << SuitNames[dealt_card.suit] << endl;
     player->expose(dealt_card);
 }
-void reset_shuffle_deck(Player *player, Deck &deck)
+void shuffle_deck(Deck &deck, bool reset)
 {
-    deck.reset();
+    if (reset)
+    {
+        deck.reset();
+    }
     cout << "Shuffling the deck\n";
     for (int shuffle_i = 0; shuffle_i < 7; shuffle_i++) // Shuffle the deck
     {
         int cut = get_cut();
         deck.shuffle(cut);
         cout << "cut at " << cut << endl;
-        player->shuffled();
     }
 }
 
@@ -35,8 +37,6 @@ void game(int bankroll, int hand, string playerType)
     Card dealt_card;
     Card dealer_up;
     Card dealer_down;
-    bool player_busted = false;
-    bool dealer_busted = false;
     if (playerType == "simple")
     {
         player = get_Simple();
@@ -50,9 +50,12 @@ void game(int bankroll, int hand, string playerType)
         return;
     }
 
-    reset_shuffle_deck(player, deck);
+    shuffle_deck(deck, true);
+    player->shuffled();
     for (int hand_i = 0; hand_i < hand; hand_i++) // Each loop is a hand to play
     {
+        bool player_busted = false;
+        bool dealer_busted = false;
         if (player_bankroll < MINIMUM)
         {
             cout << "Player has " << player_bankroll
@@ -62,7 +65,8 @@ void game(int bankroll, int hand, string playerType)
         cout << "Hand " << hand_i + 1 << " bankroll " << player_bankroll << endl;
         if (deck.cardsLeft() < 20)
         {
-            reset_shuffle_deck(player, deck);
+            shuffle_deck(deck, false);
+            player->shuffled();
         }
         int wager = player->bet(player_bankroll, MINIMUM);
         cout << "Player bets " << wager << endl;
@@ -88,13 +92,12 @@ void game(int bankroll, int hand, string playerType)
         }
         else
         {
-            cout << "Player's total is " << player_h.handValue().count << endl;
-            //cout << player_h.handValue().soft << endl;
             while (player->draw(dealer_up, player_h) == true)
             {
                 deal_toplayer(player, player_h, deck);
                 if (player_h.handValue().count > 21)
                 {
+                    cout << "Player's total is " << player_h.handValue().count << endl;
                     cout << "Player busts\n";
                     player_busted = true;
                     player_bankroll -= wager;
@@ -103,6 +106,7 @@ void game(int bankroll, int hand, string playerType)
             }
             if (!player_busted)
             {
+                cout << "Player's total is " << player_h.handValue().count << endl;
                 cout << "Dealer's hole card is " << SpotNames[dealt_card.spot] << " of " << SuitNames[dealt_card.suit] << endl;
                 player->expose(dealer_down);
                 // Dealer starts to hit
@@ -111,6 +115,7 @@ void game(int bankroll, int hand, string playerType)
                     dealt_card = deck.deal();
                     dealer_h.addCard(dealt_card);
                     cout << "Dealer dealt " << SpotNames[dealt_card.spot] << " of " << SuitNames[dealt_card.suit] << endl;
+                    player->expose(dealt_card);
                     if (dealer_h.handValue().count > 21)
                     {
                         cout << "Dealer's total is " << dealer_h.handValue().count << endl;
@@ -155,6 +160,7 @@ int main(int argc, char *argv[])
     int bankroll = atoi(argv[1]);
     int hand = atoi(argv[2]);
     string playerType = string(argv[3]);
+    //cout << bankroll << " " << hand << " " << playerType << endl;
     game(bankroll, hand, playerType);
     return 0;
 }

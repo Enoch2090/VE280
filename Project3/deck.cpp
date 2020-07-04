@@ -1,6 +1,5 @@
 #include "deck.h"
-#include <iostream>
-using namespace std;
+
 Deck::Deck()
 {
     this->reset();
@@ -73,13 +72,4 @@ Card Deck::deal()
 int Deck::cardsLeft()
 {
     return (52 - this->next);
-}
-
-void Deck::printDeck() // XXX: CONSOLE
-{
-    while (this->cardsLeft() > 0)
-    {
-        Card newcard = this->deal();
-        cout << SuitNames[newcard.suit] << " " << SpotNames[newcard.spot] << endl;
-    }
 }

@@ -1,3 +1,6 @@
+// Add the following to you deck.h:
+// void printDeck();
+// Run with:
 // $ clang++ -Wall -Werror -O2 --std=c++17 -g test_deck.cpp ../deck.cpp ../card.cpp -o deck -lm
 // $ ./deck > mydeck.out
 // $ diff deck.out mydeck.out

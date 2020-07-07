@@ -55,8 +55,6 @@ public:
     int cardsLeft();
     // EFFECTS: returns the number of cards in the deck that have not
     // been dealt since the last reset/shuffle.
-
-    void printDeck();
 };
 
 #endif /* __DECK_H__ */

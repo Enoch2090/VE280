@@ -4,15 +4,23 @@
 #include "deck.h"
 #include "rand.h"
 using namespace std;
+
 void deal_toplayer(Player *player, Hand &player_h, Deck &deck)
+// EFFECTS: deal a card from deck to player's hand, and expose the card to player.
+// MODIFIES: deck, player, player_h
 {
+
     Card dealt_card = deck.deal();
     player_h.addCard(dealt_card);
     cout << "Player dealt " << SpotNames[dealt_card.spot] << " of " << SuitNames[dealt_card.suit] << endl;
     player->expose(dealt_card);
 }
+
 void shuffle_deck(Deck &deck, bool reset)
+// EFFECTS: shuffle the deck. if reset is true, reset before shuffle.
+// MODIFIES: deck
 {
+
     if (reset)
     {
         deck.reset();
@@ -27,6 +35,7 @@ void shuffle_deck(Deck &deck, bool reset)
 }
 
 void game(int bankroll, int hand, string playerType)
+// EFFECTS: starts a game with bankroll, hand, playerType.
 {
     int MINIMUM = 5;
     int player_bankroll = bankroll;
@@ -71,16 +80,20 @@ void game(int bankroll, int hand, string playerType)
         int wager = player->bet(player_bankroll, MINIMUM);
         cout << "Player bets " << wager << endl;
 
+        // 1st card
         deal_toplayer(player, player_h, deck);
 
+        //  2nd card
         dealt_card = deck.deal();
         dealer_h.addCard(dealt_card);
         dealer_up = dealt_card;
         cout << "Dealer dealt " << SpotNames[dealt_card.spot] << " of " << SuitNames[dealt_card.suit] << endl;
         player->expose(dealt_card);
 
+        // 3rd card
         deal_toplayer(player, player_h, deck);
 
+        // 4th card
         dealt_card = deck.deal();
         dealer_h.addCard(dealt_card);
         dealer_down = dealt_card;
@@ -125,7 +138,7 @@ void game(int bankroll, int hand, string playerType)
                         break;
                     }
                 }
-                if (!dealer_busted)
+                if (!dealer_busted) // If both player and dealer not busted
                 {
                     cout << "Dealer's total is " << dealer_h.handValue().count << endl;
                     if (player_h.handValue().count > dealer_h.handValue().count)
@@ -156,11 +169,11 @@ void game(int bankroll, int hand, string playerType)
 }
 
 int main(int argc, char *argv[])
+// EFFECTS: MAIN
 {
     int bankroll = atoi(argv[1]);
     int hand = atoi(argv[2]);
     string playerType = string(argv[3]);
-    //cout << bankroll << " " << hand << " " << playerType << endl;
     game(bankroll, hand, playerType);
     return 0;
 }

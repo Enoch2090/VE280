@@ -4,17 +4,24 @@ class SimplePlayer : public Player
 {
 public:
     int bet(unsigned int bankroll, unsigned int minimum);
+    // EFFECTS: return the bet of the simple player.
     bool draw(Card dealer, const Hand &player);
+    // EFFECTS: return whether to draw.
     void expose(Card c);
+    // EFFECTS: no effect, dummy func.
     void shuffled();
+    // EFFECTS: no effect, dummy func.
 };
 
 class CountPlayer : public SimplePlayer
 {
 public:
     int bet(unsigned int bankroll, unsigned int minimum);
+    // EFFECTS: return the bet of the counting player.
     void expose(Card c);
+    // EFFECTS: allows the player to "see" the newly-exposed card c.
     void shuffled();
+    // EFFECTS: tells the player that the deck has been re-shuffled.
 
 private:
     int count;
@@ -89,17 +96,18 @@ bool SimplePlayer::draw(Card dealer, const Hand &player)
 
 void SimplePlayer::expose(Card c)
 {
-    // YAY
+    int a = 0;
+    a++;
 }
 void SimplePlayer::shuffled()
 {
-    // YAYAY
+    int a = 0;
+    a++;
 }
 //----Definition for the Counting Player----
 
 int CountPlayer::bet(unsigned int bankroll, unsigned int minimum)
 {
-    //std::cout << this->count;
     if (this->count >= 2)
     {
         return ((bankroll >= minimum * 2) ? (minimum * 2) : minimum);

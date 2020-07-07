@@ -11,7 +11,7 @@ void Hand::discardAll()
     this->curValue.soft = false;
 }
 
-void Hand::addCard(Card c) // TODO: change to soft?
+void Hand::addCard(Card c)
 {
     if (c.spot <= 8)
     {

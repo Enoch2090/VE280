@@ -1,8 +1,9 @@
 #include "node.h"
 #include <iostream>
 using namespace std;
-int main() {
-    Node A = Node(1,3);
+int main()
+{
+    Node A = Node(1, 3);
     A.addChild(2);
     A.addChild(3);
     A[0].addChild(4);
@@ -15,9 +16,9 @@ int main() {
     A.traverse();
     cout << endl;
     cout << A.getHeight() << " " << A[0].getHeight() << " " << A[1].getHeight()
-         << " " << A[0][0].getHeight()<< endl;
+         << " " << A[0][0].getHeight() << endl;
 
-    Node B = Node(1,3);
+    Node B = Node(1, 3);
     B.addChild(3);
     B[0].addChild(5);
     B[0].addChild(6);
@@ -27,7 +28,7 @@ int main() {
     B.traverse();
     cout << endl;
 
-    Node C = Node(2,3);
+    Node C = Node(2, 3);
     C.addChild(4);
     C.addChild(5);
     C.addChild(6);

@@ -5,18 +5,23 @@
 #ifndef LAB8_NODE_H
 #define LAB8_NODE_H
 
-class tooManyChildren{};
-class invalidIndex{};
-class Node {
+class tooManyChildren
+{
+};
+class invalidIndex
+{
+};
+class Node
+{
     // OVERVIEW: a node in the n-Ary tree, can also represent a n-ary tree rooted at 'this'
 private:
-    int value;      // the integer value of this
-    int child_num;  // the number of child of this
-    int n;          // n for this n-Ary tree
-    Node *parent;   // parent node of this, for root node, parent = NULL
+    int value;     // the integer value of this
+    int child_num; // the number of child of this
+    int n;         // n for this n-Ary tree
+    Node *parent;  // parent node of this, for root node, parent = NULL
     Node **children;
     // children is an array of pointer to Node. Therefore, children is a pointer of pointer
-    int height;     // height of this node
+    int height; // height of this node
 
     void addChild(Node *child);
     // REQUIRES: n of the child node is the same with n of this
@@ -56,6 +61,5 @@ public:
     //          e.g. node1[0] returns a reference of the first child node of node1
     //          if i is invalid, throw an invalidIndex
 };
-
 
 #endif //LAB8_NODE_H

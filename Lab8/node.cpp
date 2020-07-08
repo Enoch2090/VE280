@@ -10,7 +10,7 @@ Node::Node(int _value, int _n)
     this->children = new Node *[_n];
     for (int child_index = 0; child_index < _n; child_index++)
     {
-        this->children[child_index] = nullptr;
+        this->children[child_index] = NULL;
     }
     this->parent = NULL;
     this->height = 0;
@@ -30,10 +30,6 @@ void Node::addChild(int _value)
     if (this->child_num < this->n)
     {
         Node *child = new Node(_value, this->n);
-        child->child_num = 0;
-        child->value = _value;
-        child->n = this->n;
-        child->height = 0;
         child->parent = this;
         addChild(child);
     }
@@ -48,29 +44,6 @@ void Node::addChild(Node *child)
 {
 
     this->children[child_num] = child;
-    int max_height = 0;
-    for (int index = 0; index < this->child_num; index++)
-    {
-        if (this->children[index]->height >= max_height)
-        {
-            max_height = height;
-        }
-    }
-    this->height = max_height + 1;
-    Node *parent = this->parent;
-    while (parent != NULL) // Update height
-    {
-        int max_height = 0;
-        for (int index = 0; index < parent->child_num; index++)
-        {
-            if (parent->children[index]->height >= max_height)
-            {
-                max_height = height;
-            }
-        }
-        parent->height = (max_height + 1);
-        parent = parent->parent;
-    }
     this->child_num++;
 }
 
@@ -85,26 +58,49 @@ void Node::traverse()
 
 bool Node::contain(Node *sub)
 {
-    if (sub == this)
+    if (this->child_num == sub->child_num && this->value == sub->value)
     {
-        return true;
+        bool level_equal = true;
+        for (int index = 0; index < this->child_num && level_equal; index++)
+        {
+            level_equal = level_equal && this->children[index]->contain(sub->children[index]);
+        }
+        return level_equal;
     }
     else
     {
-        for (int child_index = 0; child_index < this->child_num; child_index++)
+        bool sublevel_equal = false;
+        for (int index = 0; index < this->child_num; index++)
         {
-            if (this->children[child_index]->contain(sub))
-            {
-                return true;
-            }
+            sublevel_equal = sublevel_equal || this->children[index]->contain(sub);
         }
+        return sublevel_equal;
     }
-    return false;
 }
 
 int Node::getHeight()
 {
-    return this->height;
+    if (this->child_num == 0)
+    {
+        this->height = 0;
+        return 0;
+    }
+    else
+    {
+        int max_height = -1;
+        int child_height = -1;
+        for (int index = 0; index < this->child_num; index++)
+        {
+            child_height = this->children[index]->getHeight();
+            if (child_height > max_height)
+            {
+                max_height = child_height;
+            }
+        }
+
+        this->height = max_height + 1;
+        return (max_height + 1);
+    }
 }
 
 Node &Node::operator[](int i)

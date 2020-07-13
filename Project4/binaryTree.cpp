@@ -321,12 +321,12 @@ bool BinaryTree::allPathSumGreater(int temp) const
 
 bool BinaryTree::covered_by(const BinaryTree &tree) const
 {
-    return covered(this->root, tree.root);
+    return covered(tree.root, this->root);
 }
 
 bool BinaryTree::contained_by(const BinaryTree &tree) const
 {
-    return contained(this->root, tree.root);
+    return contained(tree.root, this->root);
 }
 
 BinaryTree BinaryTree::copy() const

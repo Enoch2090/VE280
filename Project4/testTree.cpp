@@ -10,7 +10,7 @@ int main()
     Node *n3 = new Node("ddd", 5);
     Node *n4 = new Node("e", 7);
     Node *n5 = new Node("c", 3);
-    Node *n6 = new Node("5", 8);
+    Node *n6 = new Node("g", 8);
     Node *n7 = new Node("5", 9);
     n2->setleft(n4);
     n2->setright(n5);
@@ -21,18 +21,24 @@ int main()
     cout << endl;
     n5->setleft(n6);
     n5->setright(n7);
-
-    cout << b.depth() << endl;
-    cout << b.findPath("4") << endl;
     b.preorder_num();
-    cout << endl;
-    b.inorder_str();
     cout << endl;
     b.postorder_num();
     cout << endl;
-    // BinaryTree b1(n2);
-    // assert(b.allPathSumGreater(0) == 1);
-    // assert(b.allPathSumGreater(12) == 0);
-    // assert(b1.contained_by(b) == 1);
-    // assert(b1.covered_by(b) == 0);
+    cout << b.depth() << endl;
+    cout << b.findPath("5") << endl;
+    Node *n8 = new Node("a", 4);
+    Node *n9 = new Node("bb", 2);
+    Node *n11 = new Node("e", 7);
+    Node *n12 = new Node("c", 3);
+    n9->setleft(n11);
+    n9->setright(n12);
+    n8->setleft(n9);
+    BinaryTree b1(n8);
+    assert(b.allPathSumGreater(0) == 1);
+    assert(b.allPathSumGreater(12) == 0);
+    cout << "Covered By: " << b1.covered_by(b) << endl;
+    cout << "Contained By: " << b1.contained_by(b) << endl;
+    char a = 'a';
+    cout << (int)a << endl;
 }

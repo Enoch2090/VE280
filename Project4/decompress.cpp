@@ -1,6 +1,17 @@
 #include "binaryTree.h"
 #include "huffmanTree.h"
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <algorithm>
+using namespace std;
 
-int main(int argc, char *argv[]) {
+void decompress()
+{
+}
+
+int main(int argc, char *argv[])
+{
     // TODO: implement this function
 }

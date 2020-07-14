@@ -51,7 +51,7 @@ Node *Node::mergeNodes(Node *leftNode, Node *rightNode)
 {
     string mergedStr = leftNode->getstr() + rightNode->getstr();
     int mergedNum = leftNode->getnum() + rightNode->getnum();
-    Node *mergedNode = new Node(mergedStr, mergedNum);
+    Node *mergedNode = new Node(mergedStr, mergedNum, leftNode, rightNode);
     return mergedNode;
 }
 

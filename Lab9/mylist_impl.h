@@ -135,7 +135,6 @@ List<T>::~List()
 
 template <class T>
 List<T>::List(const List<T> &l)
-
 {
     this->first = nullptr;
     this->last = nullptr;
@@ -264,6 +263,10 @@ List<int> Add(const List<int> &a, const List<int> &b)
                 sum.insertBack(thisSum);
                 node1 = node1->next;
             }
+        }
+        if (carry == 1)
+        {
+            sum.insertBack(1);
         }
         return sum;
     }

@@ -279,7 +279,8 @@ BinaryTree::~BinaryTree()
 
 string BinaryTree::findPath(const string &s) const
 {
-    return findPathHelper_createString(this->root, s);
+    string res = findPathHelper_createString(this->root, s);
+    return res == "" ? (this->root->getstr() == s ? "" : "-1") : res;
 }
 
 int BinaryTree::sum() const

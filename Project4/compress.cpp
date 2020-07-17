@@ -46,7 +46,7 @@ public:
     }
 };
 
-bool compare(const Node *n1, const Node *n2) // TODO: CONST POINTER
+bool compare(const Node *n1, const Node *n2)
 {
     if (n1->getnum() == n2->getnum())
     {
@@ -58,16 +58,13 @@ bool compare(const Node *n1, const Node *n2) // TODO: CONST POINTER
     }
 }
 
-void print_node(Node *Node)
+void create_node(vector<Node *> &nodes, const char &c, asciiArray &arr)
 {
-    cout << Node->getnum() << " " << Node->getstr() << endl;
-    if (Node->leftSubtree() != nullptr)
+    if (arr[c] != 0)
     {
-        print_node(Node->leftSubtree());
-    }
-    if (Node->rightSubtree() != nullptr)
-    {
-        print_node(Node->rightSubtree());
+        string ascii_char = string(1, c);
+        Node *new_node = new Node(ascii_char, arr[c]);
+        nodes.push_back(new_node); // Convert the array to Nodes.
     }
 }
 
@@ -88,25 +85,10 @@ void compress(bool tree, char *filename)
     }
     for (char i = 'a'; i <= 'z'; i++)
     {
-        if (arr[i] != 0)
-        {
-            string ascii_char = string(1, i);
-            Node *new_node = new Node(ascii_char, arr[i]);
-            nodes.push_back(new_node); // Convert the array to Nodes.
-        }
+        create_node(nodes, i, arr);
     }
-    if (arr['\n'] != 0)
-    {
-        string ascii_char = string(1, '\n');
-        Node *new_node = new Node(ascii_char, arr['\n']);
-        nodes.push_back(new_node);
-    }
-    if (arr[' '] != 0)
-    {
-        string ascii_char = string(1, ' ');
-        Node *new_node = new Node(ascii_char, arr[' ']);
-        nodes.push_back(new_node);
-    }
+    create_node(nodes, '\n', arr);
+    create_node(nodes, ' ', arr);
     while (nodes.size() > 1)
     {
         sort(nodes.begin(), nodes.end(), compare);
@@ -134,6 +116,7 @@ void compress(bool tree, char *filename)
             cout << code << " ";
         }
     }
+    file.close();
 }
 
 int main(int argc, char *argv[])

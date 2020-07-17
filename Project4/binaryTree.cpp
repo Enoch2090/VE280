@@ -151,11 +151,11 @@ void postorder_num_print(Node *node)
     {
         if (node->leftSubtree() != nullptr)
         {
-            preorder_num_print(node->leftSubtree());
+            postorder_num_print(node->leftSubtree());
         }
         if (node->rightSubtree() != nullptr)
         {
-            preorder_num_print(node->rightSubtree());
+            postorder_num_print(node->rightSubtree());
         }
         cout << node->getnum() << " ";
     }
@@ -252,6 +252,19 @@ int depth_helper(Node *n)
     return depth;
 }
 
+int sum_helper(Node *n)
+{
+    int sum = n->getnum();
+    if (n->leftSubtree() != nullptr)
+    {
+        sum += sum_helper(n->leftSubtree());
+    }
+    if (n->rightSubtree() != nullptr)
+    {
+        sum += sum_helper(n->rightSubtree());
+    }
+    return sum;
+}
 /* =============================== Binary Tree =============================== */
 
 BinaryTree::BinaryTree(Node *rootNode)
@@ -271,18 +284,14 @@ string BinaryTree::findPath(const string &s) const
 
 int BinaryTree::sum() const
 {
-    int sum = this->root->getnum();
-    if (this->root->leftSubtree() != nullptr)
+    if (this->root != nullptr)
     {
-        BinaryTree Left = BinaryTree(this->root->leftSubtree());
-        sum += Left.sum();
+        return sum_helper(this->root);
     }
-    if (this->root->rightSubtree() != nullptr)
+    else
     {
-        BinaryTree Right = BinaryTree(this->root->rightSubtree());
-        sum += Right.sum();
+        return 0;
     }
-    return sum;
 }
 
 int BinaryTree::depth() const
@@ -295,6 +304,7 @@ void BinaryTree::preorder_num() const
     if (this->root != nullptr)
     {
         preorder_num_print(this->root);
+        cout << endl;
     }
 }
 
@@ -303,6 +313,7 @@ void BinaryTree::inorder_str() const
     if (this->root != nullptr)
     {
         inorder_str_print(this->root);
+        cout << endl;
     }
 }
 
@@ -311,6 +322,7 @@ void BinaryTree::postorder_num() const
     if (this->root != nullptr)
     {
         postorder_num_print(this->root);
+        cout << endl;
     }
 }
 

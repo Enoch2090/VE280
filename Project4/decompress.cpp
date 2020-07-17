@@ -13,5 +13,5 @@ void decompress()
 
 int main(int argc, char *argv[])
 {
-    // TODO: implement this function
+    cout << " " << endl;
 }

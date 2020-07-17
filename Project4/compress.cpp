@@ -7,6 +7,45 @@
 #include <algorithm>
 using namespace std;
 
+class asciiArray
+{
+private:
+    char ascii[28];
+    int freq[28];
+
+public:
+    asciiArray()
+    {
+        char a[28] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '\n', ' '};
+        for (int i = 0; i < 28; i++)
+        {
+            this->ascii[i] = a[i];
+            this->freq[i] = 0;
+        }
+    }
+    int operator[](char c)
+    {
+        for (int i = 0; i < 28; i++)
+        {
+            if (ascii[i] == c)
+            {
+                return freq[i];
+            }
+        }
+        return -1;
+    }
+    void addFreq(char c)
+    {
+        for (int i = 0; i < 28; i++)
+        {
+            if (ascii[i] == c)
+            {
+                freq[i]++;
+            }
+        }
+    }
+};
+
 bool compare(const Node *n1, const Node *n2) // TODO: CONST POINTER
 {
     if (n1->getnum() == n2->getnum())
@@ -35,34 +74,38 @@ void print_node(Node *Node)
 void compress(bool tree, char *filename)
 {
     string fname = string(filename);
-    string ascii_char;
     string code;
-    ifstream file(filename);
+    asciiArray arr;
     char c;
-    int identifier;
-    int ascii[128];
+    ifstream file(filename);
     vector<Node *> nodes;
     Node *merged_node;
 
-    for (int i = 0; i < 128; i++)
-    {
-        ascii[i] = 0; // Init ASCII array
-    }
     while (file.peek() != EOF)
     {
         file.get(c);
-        identifier = (int)c;
-        ascii[identifier]++; // Fill the ASCII array with frequencies.
+        arr.addFreq(c);
     }
-    for (int i = 0; i < 128; i++)
+    for (char i = 'a'; i <= 'z'; i++)
     {
-        if (ascii[i] != 0)
+        if (arr[i] != 0)
         {
-            c = (char)i;
-            ascii_char = c;
-            Node *new_node = new Node(ascii_char, ascii[i]);
+            string ascii_char = string(1, i);
+            Node *new_node = new Node(ascii_char, arr[i]);
             nodes.push_back(new_node); // Convert the array to Nodes.
         }
+    }
+    if (arr['\n'] != 0)
+    {
+        string ascii_char = string(1, '\n');
+        Node *new_node = new Node(ascii_char, arr['\n']);
+        nodes.push_back(new_node);
+    }
+    if (arr[' '] != 0)
+    {
+        string ascii_char = string(1, ' ');
+        Node *new_node = new Node(ascii_char, arr[' ']);
+        nodes.push_back(new_node);
     }
     while (nodes.size() > 1)
     {
@@ -87,7 +130,7 @@ void compress(bool tree, char *filename)
         while (file.peek() != EOF)
         {
             file.get(c);
-            code = h.findPath(string(&c));
+            code = h.findPath(string(1, c));
             cout << code << " ";
         }
     }
@@ -95,13 +138,12 @@ void compress(bool tree, char *filename)
 
 int main(int argc, char *argv[])
 {
-    bool tree = false;
-    if (argc == 2 && string(argv[1]) == "-tree")
+    if (argc == 3 && string(argv[1]) == "-tree")
     {
-        tree = true;
+        compress(true, argv[2]);
     }
-    if (argc >= 2)
+    else if (argc == 2)
     {
-        compress(tree, argv[argc - 1]);
+        compress(false, argv[1]);
     }
 }

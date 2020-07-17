@@ -27,6 +27,7 @@ int main()
     cout << endl;
     cout << b.depth() << endl;
     cout << b.findPath("5") << endl;
+    cout << b.sum() << endl;
     Node *n8 = new Node("a", 4);
     Node *n9 = new Node("bb", 2);
     Node *n11 = new Node("e", 7);

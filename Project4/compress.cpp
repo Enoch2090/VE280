@@ -89,33 +89,37 @@ void compress(bool tree, char *filename)
     }
     create_node(nodes, '\n', arr);
     create_node(nodes, ' ', arr);
-    while (nodes.size() > 1)
+    if (nodes.size() != 0)
     {
-        sort(nodes.begin(), nodes.end(), compare);
-        merged_node = Node::mergeNodes(nodes[1], nodes[0]);
-        nodes[0] = nullptr;
-        nodes[1] = nullptr;
-        nodes.erase(nodes.begin());
-        nodes.erase(nodes.begin());
-        nodes.push_back(merged_node);
-    }
-    file.clear();
-    file.seekg(0, ios::beg);
-    HuffmanTree h(nodes[0]);
-    nodes[0] = nullptr;
-    if (tree)
-    {
-        h.printTree();
-    }
-    else
-    {
-        while (file.peek() != EOF)
+        while (nodes.size() > 1)
         {
-            file.get(c);
-            code = h.findPath(string(1, c));
-            cout << code << " ";
+            sort(nodes.begin(), nodes.end(), compare);
+            merged_node = Node::mergeNodes(nodes[1], nodes[0]);
+            nodes[0] = nullptr;
+            nodes[1] = nullptr;
+            nodes.erase(nodes.begin());
+            nodes.erase(nodes.begin());
+            nodes.push_back(merged_node);
+        }
+        file.clear();
+        file.seekg(0, ios::beg);
+        HuffmanTree h(nodes[0]);
+        nodes[0] = nullptr;
+        if (tree)
+        {
+            h.printTree();
+        }
+        else
+        {
+            while (file.peek() != EOF)
+            {
+                file.get(c);
+                code = h.findPath(string(1, c));
+                cout << code << " ";
+            }
         }
     }
+
     file.close();
 }
 

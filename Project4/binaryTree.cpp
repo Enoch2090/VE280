@@ -6,65 +6,16 @@
 
 using namespace std;
 
-/* ================================== Node =================================== */
-Node::Node(const std::string &str, int num, Node *left, Node *right)
-{
-    this->str = str;
-    this->num = num;
-    this->left = left;
-    this->right = right;
-}
-
-Node *Node::leftSubtree() const
-{
-    return this->left;
-}
-void Node::setleft(Node *n)
-{
-    this->left = n;
-}
-
-Node *Node::rightSubtree() const
-{
-    return this->right;
-}
-
-void Node::setright(Node *n)
-{
-    this->right = n;
-}
-
-string Node::getstr() const
-{
-    return this->str;
-}
-
-int Node::getnum() const
-{
-    return this->num;
-}
-void Node::incnum()
-{
-    this->num++;
-}
-Node *Node::mergeNodes(Node *leftNode, Node *rightNode)
-{
-    string mergedStr = leftNode->getstr() + rightNode->getstr();
-    int mergedNum = leftNode->getnum() + rightNode->getnum();
-    Node *mergedNode = new Node(mergedStr, mergedNum, leftNode, rightNode);
-    return mergedNode;
-}
-
 /* =============================== Helper Functions for The Binary Tree. =============================== */
 void free_helper(Node *node)
 {
     Node *left = node->leftSubtree();
     Node *right = node->rightSubtree();
-    if (left != nullptr)
+    if (left)
     {
         free_helper(left);
     }
-    if (right != nullptr)
+    if (right)
     {
         free_helper(right);
     }
@@ -73,7 +24,7 @@ void free_helper(Node *node)
 
 bool findPathHelper_isPath(Node *node, const string &s)
 {
-    if (node == nullptr)
+    if (!node)
     {
         return false;
     }
@@ -81,14 +32,14 @@ bool findPathHelper_isPath(Node *node, const string &s)
     {
         return true;
     }
-    if (node->leftSubtree() != nullptr)
+    if (node->leftSubtree())
     {
         if (findPathHelper_isPath(node->leftSubtree(), s))
         {
             return true;
         }
     }
-    if ((node->rightSubtree() != nullptr))
+    if (node->rightSubtree())
     {
         if (findPathHelper_isPath(node->rightSubtree(), s))
         {
@@ -115,14 +66,14 @@ string findPathHelper_createString(Node *node, const string &s)
 }
 void preorder_num_print(Node *node)
 {
-    if (node != nullptr)
+    if (node)
     {
         cout << node->getnum() << " ";
-        if (node->leftSubtree() != nullptr)
+        if (node->leftSubtree())
         {
             preorder_num_print(node->leftSubtree());
         }
-        if (node->rightSubtree() != nullptr)
+        if (node->rightSubtree())
         {
             preorder_num_print(node->rightSubtree());
         }
@@ -131,14 +82,14 @@ void preorder_num_print(Node *node)
 
 void inorder_str_print(Node *node)
 {
-    if (node != nullptr)
+    if (node)
     {
-        if (node->leftSubtree() != nullptr)
+        if (node->leftSubtree())
         {
             inorder_str_print(node->leftSubtree());
         }
         cout << node->getstr() << " ";
-        if (node->rightSubtree() != nullptr)
+        if (node->rightSubtree())
         {
             inorder_str_print(node->rightSubtree());
         }
@@ -147,13 +98,13 @@ void inorder_str_print(Node *node)
 
 void postorder_num_print(Node *node)
 {
-    if (node != nullptr)
+    if (node)
     {
-        if (node->leftSubtree() != nullptr)
+        if (node->leftSubtree())
         {
             postorder_num_print(node->leftSubtree());
         }
-        if (node->rightSubtree() != nullptr)
+        if (node->rightSubtree())
         {
             postorder_num_print(node->rightSubtree());
         }
@@ -163,21 +114,21 @@ void postorder_num_print(Node *node)
 
 bool path_sum_gt(Node *node, int sum)
 {
-    if (node == nullptr)
+    if (!node)
     {
         return false;
     }
     else
     {
-        if (node->leftSubtree() == nullptr && node->rightSubtree() != nullptr)
+        if (!node->leftSubtree() && node->rightSubtree())
         {
             return path_sum_gt(node->rightSubtree(), sum - node->getnum());
         }
-        else if (node->rightSubtree() == nullptr && node->leftSubtree() != nullptr)
+        else if (!node->rightSubtree() && node->leftSubtree())
         {
             return path_sum_gt(node->leftSubtree(), sum - node->getnum());
         }
-        else if (node->rightSubtree() != nullptr && node->leftSubtree() != nullptr)
+        else if (node->rightSubtree() && node->leftSubtree())
         {
             return path_sum_gt(node->rightSubtree(), sum - node->getnum()) && path_sum_gt(node->leftSubtree(), sum - node->getnum());
         }
@@ -190,34 +141,31 @@ bool path_sum_gt(Node *node, int sum)
 
 bool covered(Node *node1, Node *node2)
 {
-    if (node1 == nullptr && node2 == nullptr)
+    if (!node2)
     {
         return true;
     }
-    else if (node1 == nullptr || node2 == nullptr)
+    else if (!node1)
     {
         return false;
     }
+    else if (node1->getnum() == node2->getnum())
+    {
+        return covered(node1->leftSubtree(), node2->leftSubtree()) && covered(node1->rightSubtree(), node2->rightSubtree());
+    }
     else
     {
-        if (node1->getnum() == node2->getnum())
-        {
-            return covered(node1->leftSubtree(), node2->leftSubtree()) || covered(node1->rightSubtree(), node2->rightSubtree());
-        }
-        else
-        {
-            return false;
-        }
+        return false;
     }
 }
 
 bool contained(Node *node1, Node *node2)
 {
-    if (node1 == nullptr && node2 == nullptr)
+    if (!node1 && !node2)
     {
         return true;
     }
-    else if (node1 == nullptr || node2 == nullptr)
+    else if (!node1 || !node2)
     {
         return false;
     }
@@ -231,11 +179,11 @@ Node *copy_helper(Node *n)
 {
     Node *new_left = n->leftSubtree();
     Node *new_right = n->rightSubtree(); // Set for nullptr.
-    if (n->leftSubtree() != nullptr)
+    if (n->leftSubtree())
     {
         new_left = copy_helper(n->leftSubtree());
     }
-    if (n->rightSubtree() != nullptr)
+    if (n->rightSubtree())
     {
         new_right = copy_helper(n->rightSubtree());
     }
@@ -245,8 +193,8 @@ Node *copy_helper(Node *n)
 int depth_helper(Node *n)
 {
     int depth = 0;
-    int depth_left = (n->leftSubtree() == nullptr) ? (0) : (depth_helper(n->leftSubtree()));
-    int depth_right = (n->rightSubtree() == nullptr) ? (0) : (depth_helper(n->rightSubtree()));
+    int depth_left = (!n->leftSubtree()) ? (0) : (depth_helper(n->leftSubtree()));
+    int depth_right = (!n->rightSubtree()) ? (0) : (depth_helper(n->rightSubtree()));
     int sub_depth = (depth_left > depth_right) ? depth_left : depth_right;
     depth = sub_depth == 0 ? 1 : sub_depth + 1;
     return depth;
@@ -255,16 +203,74 @@ int depth_helper(Node *n)
 int sum_helper(Node *n)
 {
     int sum = n->getnum();
-    if (n->leftSubtree() != nullptr)
+    if (n->leftSubtree())
     {
         sum += sum_helper(n->leftSubtree());
     }
-    if (n->rightSubtree() != nullptr)
+    if (n->rightSubtree())
     {
         sum += sum_helper(n->rightSubtree());
     }
     return sum;
 }
+
+/* ================================== Node =================================== */
+Node::Node(const std::string &str, int num, Node *left, Node *right)
+{
+    this->str = str;
+    this->num = num;
+    this->left = left;
+    this->right = right;
+}
+
+Node *Node::leftSubtree() const
+{
+    return this->left;
+}
+void Node::setleft(Node *n)
+{
+    if (this->left)
+    {
+        free_helper(this->left);
+    }
+    this->left = n;
+}
+
+Node *Node::rightSubtree() const
+{
+    return this->right;
+}
+
+void Node::setright(Node *n)
+{
+    if (this->right)
+    {
+        free_helper(this->right);
+    }
+    this->right = n;
+}
+
+string Node::getstr() const
+{
+    return this->str;
+}
+
+int Node::getnum() const
+{
+    return this->num;
+}
+void Node::incnum()
+{
+    this->num++;
+}
+Node *Node::mergeNodes(Node *leftNode, Node *rightNode)
+{
+    string mergedStr = leftNode->getstr() + rightNode->getstr();
+    int mergedNum = leftNode->getnum() + rightNode->getnum();
+    Node *mergedNode = new Node(mergedStr, mergedNum, leftNode, rightNode);
+    return mergedNode;
+}
+
 /* =============================== Binary Tree =============================== */
 
 BinaryTree::BinaryTree(Node *rootNode)
@@ -285,7 +291,7 @@ string BinaryTree::findPath(const string &s) const
 
 int BinaryTree::sum() const
 {
-    if (this->root != nullptr)
+    if (this->root)
     {
         return sum_helper(this->root);
     }
@@ -302,7 +308,7 @@ int BinaryTree::depth() const
 
 void BinaryTree::preorder_num() const
 {
-    if (this->root != nullptr)
+    if (this->root)
     {
         preorder_num_print(this->root);
         cout << endl;
@@ -311,7 +317,7 @@ void BinaryTree::preorder_num() const
 
 void BinaryTree::inorder_str() const
 {
-    if (this->root != nullptr)
+    if (this->root)
     {
         inorder_str_print(this->root);
         cout << endl;
@@ -320,7 +326,7 @@ void BinaryTree::inorder_str() const
 
 void BinaryTree::postorder_num() const
 {
-    if (this->root != nullptr)
+    if (this->root)
     {
         postorder_num_print(this->root);
         cout << endl;

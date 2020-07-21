@@ -58,17 +58,20 @@ Node *Node::mergeNodes(Node *leftNode, Node *rightNode)
 /* =============================== Helper Functions for The Binary Tree. =============================== */
 void free_helper(Node *node)
 {
-    Node *left = node->leftSubtree();
-    Node *right = node->rightSubtree();
-    if (left)
+    if (node)
     {
-        free_helper(left);
+        Node *left = node->leftSubtree();
+        Node *right = node->rightSubtree();
+        if (left)
+        {
+            free_helper(left);
+        }
+        if (right)
+        {
+            free_helper(right);
+        }
+        delete node;
     }
-    if (right)
-    {
-        free_helper(right);
-    }
-    delete node;
 }
 
 bool findPathHelper_isPath(Node *node, const string &s)

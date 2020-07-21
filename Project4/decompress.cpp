@@ -12,6 +12,8 @@ class nullNode
 };
 
 string decode(Node *root, const string &bincode)
+// REQUIRES: root the root of a huffman tree, bincode the encoded code of a character.
+// EFFECTS: returns the decoded character.
 {
     Node *node;
     node = root;
@@ -46,6 +48,8 @@ string decode(Node *root, const string &bincode)
 }
 
 void decompress(string treefile, string binfile)
+// REQUIRES: treefile the path to tree, binfile the path to the encoded file.
+// EFFECTS: prints the decoded string.
 {
     HuffmanTree h(treefile);
     //h.printTree();

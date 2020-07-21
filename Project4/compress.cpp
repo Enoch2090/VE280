@@ -1,4 +1,4 @@
-#include "binaryTree.h"
+ #include "binaryTree.h"
 #include "huffmanTree.h"
 #include <string>
 #include <iostream>
@@ -111,11 +111,18 @@ void compress(bool tree, char *filename)
         }
         else
         {
+            bool isFirst = true;
+
             while (file.peek() != EOF)
             {
+                if (!isFirst)
+                {
+                    cout << " ";
+                }
                 file.get(c);
                 code = h.findPath(string(1, c));
-                cout << code << " ";
+                cout << code;
+                isFirst = false;
             }
         }
     }

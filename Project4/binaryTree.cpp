@@ -6,6 +6,55 @@
 
 using namespace std;
 
+/* ================================== Node =================================== */
+Node::Node(const std::string &str, int num, Node *left, Node *right)
+{
+    this->str = str;
+    this->num = num;
+    this->left = left;
+    this->right = right;
+}
+
+Node *Node::leftSubtree() const
+{
+    return this->left;
+}
+void Node::setleft(Node *n)
+{
+    this->left = n;
+}
+
+Node *Node::rightSubtree() const
+{
+    return this->right;
+}
+
+void Node::setright(Node *n)
+{
+    this->right = n;
+}
+
+string Node::getstr() const
+{
+    return this->str;
+}
+
+int Node::getnum() const
+{
+    return this->num;
+}
+void Node::incnum()
+{
+    this->num++;
+}
+Node *Node::mergeNodes(Node *leftNode, Node *rightNode)
+{
+    string mergedStr = leftNode->getstr() + rightNode->getstr();
+    int mergedNum = leftNode->getnum() + rightNode->getnum();
+    Node *mergedNode = new Node(mergedStr, mergedNum, leftNode, rightNode);
+    return mergedNode;
+}
+
 /* =============================== Helper Functions for The Binary Tree. =============================== */
 void free_helper(Node *node)
 {
@@ -51,13 +100,20 @@ bool findPathHelper_isPath(Node *node, const string &s)
 
 string findPathHelper_createString(Node *node, const string &s)
 {
-    if (findPathHelper_isPath(node->leftSubtree(), s))
+    if (node)
     {
-        return "0" + findPathHelper_createString(node->leftSubtree(), s);
-    }
-    else if (findPathHelper_isPath(node->rightSubtree(), s))
-    {
-        return "1" + findPathHelper_createString(node->rightSubtree(), s);
+        if (findPathHelper_isPath(node->leftSubtree(), s))
+        {
+            return "0" + findPathHelper_createString(node->leftSubtree(), s);
+        }
+        else if (findPathHelper_isPath(node->rightSubtree(), s))
+        {
+            return "1" + findPathHelper_createString(node->rightSubtree(), s);
+        }
+        else
+        {
+            return "";
+        }
     }
     else
     {
@@ -177,98 +233,52 @@ bool contained(Node *node1, Node *node2)
 
 Node *copy_helper(Node *n)
 {
-    Node *new_left = n->leftSubtree();
-    Node *new_right = n->rightSubtree(); // Set for nullptr.
-    if (n->leftSubtree())
+    Node *new_node = nullptr;
+    if (n)
     {
-        new_left = copy_helper(n->leftSubtree());
+        Node *new_left = n->leftSubtree();
+        Node *new_right = n->rightSubtree(); // Set for nullptr.
+        if (n->leftSubtree())
+        {
+            new_left = copy_helper(n->leftSubtree());
+        }
+        if (n->rightSubtree())
+        {
+            new_right = copy_helper(n->rightSubtree());
+        }
+        new_node = new Node(n->getstr(), n->getnum(), new_left, new_right);
     }
-    if (n->rightSubtree())
-    {
-        new_right = copy_helper(n->rightSubtree());
-    }
-    Node *new_node = new Node(n->getstr(), n->getnum(), new_left, new_right);
     return new_node;
 }
 int depth_helper(Node *n)
 {
     int depth = 0;
-    int depth_left = (!n->leftSubtree()) ? (0) : (depth_helper(n->leftSubtree()));
-    int depth_right = (!n->rightSubtree()) ? (0) : (depth_helper(n->rightSubtree()));
-    int sub_depth = (depth_left > depth_right) ? depth_left : depth_right;
-    depth = sub_depth == 0 ? 1 : sub_depth + 1;
+    if (n)
+    {
+        int depth_left = (!n->leftSubtree()) ? (0) : (depth_helper(n->leftSubtree()));
+        int depth_right = (!n->rightSubtree()) ? (0) : (depth_helper(n->rightSubtree()));
+        int sub_depth = (depth_left > depth_right) ? depth_left : depth_right;
+        depth = sub_depth == 0 ? 1 : sub_depth + 1;
+    }
     return depth;
 }
 
 int sum_helper(Node *n)
 {
-    int sum = n->getnum();
-    if (n->leftSubtree())
+    if (n)
     {
-        sum += sum_helper(n->leftSubtree());
+        int sum = n->getnum();
+        if (n->leftSubtree())
+        {
+            sum += sum_helper(n->leftSubtree());
+        }
+        if (n->rightSubtree())
+        {
+            sum += sum_helper(n->rightSubtree());
+        }
+        return sum;
     }
-    if (n->rightSubtree())
-    {
-        sum += sum_helper(n->rightSubtree());
-    }
-    return sum;
-}
-
-/* ================================== Node =================================== */
-Node::Node(const std::string &str, int num, Node *left, Node *right)
-{
-    this->str = str;
-    this->num = num;
-    this->left = left;
-    this->right = right;
-}
-
-Node *Node::leftSubtree() const
-{
-    return this->left;
-}
-void Node::setleft(Node *n)
-{
-    if (this->left)
-    {
-        free_helper(this->left);
-    }
-    this->left = n;
-}
-
-Node *Node::rightSubtree() const
-{
-    return this->right;
-}
-
-void Node::setright(Node *n)
-{
-    if (this->right)
-    {
-        free_helper(this->right);
-    }
-    this->right = n;
-}
-
-string Node::getstr() const
-{
-    return this->str;
-}
-
-int Node::getnum() const
-{
-    return this->num;
-}
-void Node::incnum()
-{
-    this->num++;
-}
-Node *Node::mergeNodes(Node *leftNode, Node *rightNode)
-{
-    string mergedStr = leftNode->getstr() + rightNode->getstr();
-    int mergedNum = leftNode->getnum() + rightNode->getnum();
-    Node *mergedNode = new Node(mergedStr, mergedNum, leftNode, rightNode);
-    return mergedNode;
+    return 0;
 }
 
 /* =============================== Binary Tree =============================== */

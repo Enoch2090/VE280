@@ -103,20 +103,14 @@ bool findPathHelper_isPath(Node *node, const string &s)
 
 string findPathHelper_createString(Node *node, const string &s)
 {
-    if (node)
+
+    if (findPathHelper_isPath(node->leftSubtree(), s))
     {
-        if (findPathHelper_isPath(node->leftSubtree(), s))
-        {
-            return "0" + findPathHelper_createString(node->leftSubtree(), s);
-        }
-        else if (findPathHelper_isPath(node->rightSubtree(), s))
-        {
-            return "1" + findPathHelper_createString(node->rightSubtree(), s);
-        }
-        else
-        {
-            return "";
-        }
+        return "0" + findPathHelper_createString(node->leftSubtree(), s);
+    }
+    else if (findPathHelper_isPath(node->rightSubtree(), s))
+    {
+        return "1" + findPathHelper_createString(node->rightSubtree(), s);
     }
     else
     {
@@ -298,8 +292,15 @@ BinaryTree::~BinaryTree()
 
 string BinaryTree::findPath(const string &s) const
 {
-    string res = findPathHelper_createString(this->root, s);
-    return res == "" ? (this->root->getstr() == s ? "" : "-1") : res;
+    if (this->root)
+    {
+        string res = findPathHelper_createString(this->root, s);
+        return res == "" ? (this->root->getstr() == s ? "" : "-1") : res;
+    }
+    else
+    {
+        return "-1";
+    }
 }
 
 int BinaryTree::sum() const

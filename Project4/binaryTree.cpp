@@ -76,7 +76,7 @@ void free_helper(Node *node)
 
 bool findPathHelper_isPath(Node *node, const string &s)
 {
-    if (!node)
+    if (!node) // Case for empty root
     {
         return false;
     }
@@ -119,7 +119,7 @@ string findPathHelper_createString(Node *node, const string &s)
 }
 void preorder_num_print(Node *node)
 {
-    if (node)
+    if (node) // Case for empty root
     {
         cout << node->getnum() << " ";
         if (node->leftSubtree())
@@ -135,7 +135,7 @@ void preorder_num_print(Node *node)
 
 void inorder_str_print(Node *node)
 {
-    if (node)
+    if (node) // Case for empty root
     {
         if (node->leftSubtree())
         {
@@ -151,7 +151,7 @@ void inorder_str_print(Node *node)
 
 void postorder_num_print(Node *node)
 {
-    if (node)
+    if (node) // Case for empty root
     {
         if (node->leftSubtree())
         {
@@ -194,11 +194,11 @@ bool path_sum_gt(Node *node, int sum)
 
 bool covered(Node *node1, Node *node2)
 {
-    if (!node2)
+    if (!node2) // If the node is empty then there is no difference.
     {
         return true;
     }
-    else if (!node1)
+    else if (!node1) // If the supernode is empty then it can't cover the node.
     {
         return false;
     }
@@ -214,11 +214,11 @@ bool covered(Node *node1, Node *node2)
 
 bool contained(Node *node1, Node *node2)
 {
-    if (!node1 && !node2)
+    if (!node2) // If the node is empty then there is no difference.
     {
         return true;
     }
-    else if (!node1 || !node2)
+    else if (!node1) // If the supernode is empty then it can't contain the node.
     {
         return false;
     }
@@ -250,7 +250,7 @@ Node *copy_helper(Node *n)
 int depth_helper(Node *n)
 {
     int depth = 0;
-    if (n)
+    if (n) // Case for empty root
     {
         int depth_left = (!n->leftSubtree()) ? (0) : (depth_helper(n->leftSubtree()));
         int depth_right = (!n->rightSubtree()) ? (0) : (depth_helper(n->rightSubtree()));
@@ -262,7 +262,7 @@ int depth_helper(Node *n)
 
 int sum_helper(Node *n)
 {
-    if (n)
+    if (n) // Case for empty root
     {
         int sum = n->getnum();
         if (n->leftSubtree())
@@ -292,7 +292,7 @@ BinaryTree::~BinaryTree()
 
 string BinaryTree::findPath(const string &s) const
 {
-    if (this->root)
+    if (this->root) // Case for empty root
     {
         string res = findPathHelper_createString(this->root, s);
         return res == "" ? (this->root->getstr() == s ? "" : "-1") : res;
@@ -305,7 +305,7 @@ string BinaryTree::findPath(const string &s) const
 
 int BinaryTree::sum() const
 {
-    if (this->root)
+    if (this->root) // Case for empty root
     {
         return sum_helper(this->root);
     }
@@ -317,12 +317,13 @@ int BinaryTree::sum() const
 
 int BinaryTree::depth() const
 {
+    // Case for empty root contained in helper
     return depth_helper(this->root);
 }
 
 void BinaryTree::preorder_num() const
 {
-    if (this->root)
+    if (this->root) // Case for empty root
     {
         preorder_num_print(this->root);
         cout << endl;
@@ -331,7 +332,7 @@ void BinaryTree::preorder_num() const
 
 void BinaryTree::inorder_str() const
 {
-    if (this->root)
+    if (this->root) // Case for empty root
     {
         inorder_str_print(this->root);
         cout << endl;
@@ -340,7 +341,7 @@ void BinaryTree::inorder_str() const
 
 void BinaryTree::postorder_num() const
 {
-    if (this->root)
+    if (this->root) // Case for empty root
     {
         postorder_num_print(this->root);
         cout << endl;
@@ -349,21 +350,25 @@ void BinaryTree::postorder_num() const
 
 bool BinaryTree::allPathSumGreater(int temp) const
 {
+    // Case for empty root contained in helper
     return path_sum_gt(this->root, temp);
 }
 
 bool BinaryTree::covered_by(const BinaryTree &tree) const
 {
+    // Case for empty root contained in helper
     return covered(tree.root, this->root);
 }
 
 bool BinaryTree::contained_by(const BinaryTree &tree) const
 {
+    // Case for empty root contained in helper
     return contained(tree.root, this->root);
 }
 
 BinaryTree BinaryTree::copy() const
 {
+    // Case for empty root contained in helper
     Node *new_root = copy_helper(this->root);
     return BinaryTree(new_root);
 }

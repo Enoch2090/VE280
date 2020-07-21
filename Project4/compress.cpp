@@ -1,4 +1,4 @@
- #include "binaryTree.h"
+#include "binaryTree.h"
 #include "huffmanTree.h"
 #include <string>
 #include <iostream>
@@ -14,7 +14,8 @@ private:
     int freq[28];
 
 public:
-    asciiArray()
+    asciiArray() // INIT
+    // EFFECTS: build a new ascii array.
     {
         char a[28] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '\n', ' '};
         for (int i = 0; i < 28; i++)
@@ -24,6 +25,8 @@ public:
         }
     }
     int operator[](char c)
+    // REQUIRES: c a char in asciiArray.
+    // EFFECTS: returns this->freq[i], where this->ascii[i]==c
     {
         for (int i = 0; i < 28; i++)
         {
@@ -35,6 +38,9 @@ public:
         return -1;
     }
     void addFreq(char c)
+    // REQUIRES: c a char in asciiArray.
+    // MODIFIES: this->freq[i], where this->ascii[i]==c
+    // EFFECTS: adds one to this->freq[i], where this->ascii[i]==c
     {
         for (int i = 0; i < 28; i++)
         {
@@ -47,6 +53,8 @@ public:
 };
 
 bool compare(const Node *n1, const Node *n2)
+// REQUIRES: n1, n2 two pointers to nodes.
+// EFFECTS: compares the two nodes.
 {
     if (n1->getnum() == n2->getnum())
     {
@@ -59,6 +67,9 @@ bool compare(const Node *n1, const Node *n2)
 }
 
 void create_node(vector<Node *> &nodes, const char &c, asciiArray &arr)
+// REQUIRES: nodes a vector of node pointers.
+// MODIFIES: nodes, arr
+// EFFECTS: adds a node with string c in nodes
 {
     if (arr[c] != 0)
     {
@@ -69,10 +80,12 @@ void create_node(vector<Node *> &nodes, const char &c, asciiArray &arr)
 }
 
 void compress(bool tree, char *filename)
+// REQUIRES: filename the filename for the textfile. tree the parameter whether to print tree
+// EFFECTS: compiles the file at filename
 {
     string fname = string(filename);
     string code;
-    asciiArray arr;
+    asciiArray arr; // See class definition.
     char c;
     ifstream file(filename);
     vector<Node *> nodes;
@@ -95,14 +108,14 @@ void compress(bool tree, char *filename)
         {
             sort(nodes.begin(), nodes.end(), compare);
             merged_node = Node::mergeNodes(nodes[1], nodes[0]);
-            nodes[0] = nullptr;
+            nodes[0] = nullptr; // Preventing vector.erase() to free the node.
             nodes[1] = nullptr;
             nodes.erase(nodes.begin());
             nodes.erase(nodes.begin());
             nodes.push_back(merged_node);
         }
         file.clear();
-        file.seekg(0, ios::beg);
+        file.seekg(0, ios::beg); // Rewind for read.
         HuffmanTree h(nodes[0]);
         nodes[0] = nullptr;
         if (tree)
@@ -120,7 +133,7 @@ void compress(bool tree, char *filename)
                     cout << " ";
                 }
                 file.get(c);
-                code = h.findPath(string(1, c));
+                code = h.findPath(string(1, c)); // Encoding process
                 cout << code;
                 isFirst = false;
             }

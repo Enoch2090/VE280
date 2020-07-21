@@ -10,6 +10,12 @@ using namespace std;
 class nullNode
 {
 };
+void throwNullNNode()
+// EFFECTS: Throw an instance of nullNode(under very rare circumstances).
+{
+    nullNode n;
+    throw n;
+}
 
 string decode(Node *root, const string &bincode)
 // REQUIRES: root the root of a huffman tree, bincode the encoded code of a character.
@@ -27,8 +33,7 @@ string decode(Node *root, const string &bincode)
             }
             else
             {
-                nullNode n;
-                throw n;
+                throwNullNNode();
             }
         }
         else if (bincode[i] == '1')
@@ -39,8 +44,7 @@ string decode(Node *root, const string &bincode)
             }
             else
             {
-                nullNode n;
-                throw n;
+                throwNullNNode();
             }
         }
     }

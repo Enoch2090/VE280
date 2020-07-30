@@ -1,7 +1,7 @@
 #ifndef DLIST_IMPL_H
 #define DLIST_IMPL_H
-#include <iostream>
 #include "dlist.h"
+#include <iostream>
 
 template <class T>
 bool Dlist<T>::isEmpty() const
@@ -35,7 +35,7 @@ void Dlist<T>::insertBack(T *op)
 {
     node *newnode = new node;
     newnode->op = op;
-    if (!this->first)
+    if (!this->last)
     {
         newnode->prev = nullptr;
         newnode->next = nullptr;
@@ -107,23 +107,17 @@ T *Dlist<T>::removeBack()
             node *newLast = this->last->prev;
             newLast->next = nullptr;
             delete this->last;
-            this->first = newLast;
+            this->last = newLast;
         }
     }
     return valp;
 }
 
-// template <class T>
-// bool cmp(const T *T1, const T *T2)
-// {
-//     return (*T1 == *T2);
-// }
-
 template <class T>
 T *Dlist<T>::remove(bool (*cmp)(const T *, const T *), T *ref)
 {
     node *current = this->first;
-    T *valp = nullptr;
+    T *valp;
     while (current)
     {
         if (cmp(current->op, ref))
@@ -154,9 +148,11 @@ T *Dlist<T>::remove(bool (*cmp)(const T *, const T *), T *ref)
                 current->next->prev = current->prev;
             }
             delete current;
+            return valp;
         }
+        current = current->next;
     }
-    return valp;
+    return nullptr;
 }
 
 template <class T>
@@ -169,12 +165,15 @@ Dlist<T>::Dlist()
 template <class T>
 Dlist<T>::Dlist(const Dlist<T> &l)
 {
+    this->first = nullptr;
+    this->last = nullptr;
     node *current = l.first;
     while (current)
     {
         T *newop = new T;
         *newop = *(current->op);
         this->insertBack(newop);
+        current = current->next;
     }
 }
 
@@ -182,10 +181,11 @@ template <class T>
 Dlist<T> &Dlist<T>::operator=(const Dlist<T> &l)
 {
     node *thisCurrent = this->first;
+    node *thisNext;
     while (thisCurrent)
     {
         delete thisCurrent->op;
-        node *thisNext = thisCurrent->next;
+        thisNext = thisCurrent->next;
         delete thisCurrent;
         thisCurrent = thisNext;
     }
@@ -195,6 +195,7 @@ Dlist<T> &Dlist<T>::operator=(const Dlist<T> &l)
         T *newop = new T;
         *newop = *(current->op);
         this->insertBack(newop);
+        current = current->next;
     }
 }
 
@@ -202,12 +203,14 @@ template <class T>
 Dlist<T>::~Dlist()
 {
     node *thisCurrent = this->first;
+    node *thisNext;
     while (thisCurrent)
     {
         delete thisCurrent->op;
-        node *thisNext = thisCurrent->next;
+        thisNext = thisCurrent->next;
         delete thisCurrent;
         thisCurrent = thisNext;
     }
 }
+
 #endif //DLIST_IMPL_H

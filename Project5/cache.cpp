@@ -1,8 +1,7 @@
+#include "dlist.h"
 #include <iostream>
 #include <sstream>
 #include <string>
-
-#include "dlist.h"
 using namespace std;
 
 class LRUCache
@@ -154,39 +153,112 @@ void LRUCache::printMem()
   for (int i = 0; i < this->mem_size; i++)
   {
     cout << this->memory[i];
-    if (i != this->mem_size - 1)
-    {
-      cout << " ";
-    }
+    cout << " ";
   }
   cout << endl;
 }
 
 int main()
 {
-  LRUCache L(3, 8);
-  L.printCache();
-  L.printMem();
-  L.write(0, 999);
-  cout << "Write 999 at 0" << endl;
-  L.printCache();
-  L.write(1, 998);
-  cout << "Write 998 at 1" << endl;
-  L.printCache();
-  L.write(2, 997);
-  cout << "Write 997 at 2" << endl;
-  L.printCache();
-  L.printMem();
-  L.write(3, 996);
-  L.printCache();
-  L.printMem();
-  L.write(4, 995);
-  L.printCache();
-  L.printMem();
-  // cout << L.read(0) << endl;
-  // cout << L.read(1) << endl;
-  // cout << L.read(2) << endl;
-  // cout << L.read(3) << endl;
-  // cout << L.read(4) << endl;
+  int CACHESIZE;
+  int MEMSIZE;
+  bool EXIT = false;
+  string INSTRUCTION;
+  string temp;
+  int address;
+  int data;
+  istringstream is;
+  getline(cin, temp);
+  is.str(temp);
+  is >> CACHESIZE >> MEMSIZE;
+  LRUCache L(CACHESIZE, MEMSIZE);
+  while (!EXIT)
+  {
+    getline(cin, temp);
+    is.clear();
+    is.str(temp);
+    is >> INSTRUCTION;
+    try
+    {
+      if (INSTRUCTION == "READ")
+      {
+        if (is >> address)
+        {
+          if (is.peek() != EOF)
+          {
+            cout << "ERROR: Too many operands" << endl;
+          }
+          else
+          {
+            data = L.read(address);
+            cout << data << endl;
+          }
+        }
+        else
+        {
+          cout << "ERROR: Not enough operands" << endl;
+        }
+      }
+      else if (INSTRUCTION == "WRITE")
+      {
+        if (is >> address && is >> data)
+        {
+          if (is.peek() != EOF)
+          {
+            cout << "ERROR: Too many operands" << endl;
+          }
+          else
+          {
+            L.write(address, data);
+          }
+        }
+        else
+        {
+          cout << "ERROR: Not enough operands" << endl;
+        }
+      }
+      else if (INSTRUCTION == "PRINTCACHE")
+      {
+        if (is.peek() != EOF)
+        {
+          cout << "ERROR: Too many operands" << endl;
+        }
+        else
+        {
+          L.printCache();
+        }
+      }
+      else if (INSTRUCTION == "PRINTMEM")
+      {
+        if (is.peek() != EOF)
+        {
+          cout << "ERROR: Too many operands" << endl;
+        }
+        else
+        {
+          L.printMem();
+        }
+      }
+      else if (INSTRUCTION == "EXIT")
+      {
+        if (is.peek() != EOF)
+        {
+          cout << "ERROR: Too many operands" << endl;
+        }
+        else
+        {
+          EXIT = true;
+        }
+      }
+      else
+      {
+        cout << "ERROR: Unknown instruction" << endl;
+      }
+    }
+    catch (int a)
+    {
+      continue;
+    }
+  }
   return 0;
 }

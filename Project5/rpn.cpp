@@ -1,7 +1,7 @@
-#include <iostream>
-#include <string>
-#include <sstream>
 #include "dlist.h"
+#include <iostream>
+#include <sstream>
+#include <string>
 using namespace std;
 
 // ----------Utilities----------
@@ -82,31 +82,57 @@ void getVAL(string expression)
         {
             exp >> currOperator;
             exp.get();
+            if (operandStack.isEmpty())
+            {
+                cout << "ERROR: Not enough operands" << endl;
+                return;
+            }
             int *operand1 = operandStack.removeFront();
+            if (operandStack.isEmpty())
+            {
+                cout << "ERROR: Not enough operands" << endl;
+                delete operand1;
+                return;
+            }
             int *operand2 = operandStack.removeFront();
-            int *result = new int(0);
+            int res = 0;
             if (currOperator == '+')
             {
-                *result = (*operand1) + (*operand2);
+                res = (*operand1) + (*operand2);
             }
             else if (currOperator == '-')
             {
-                *result = (*operand2) - (*operand1);
+                res = (*operand2) - (*operand1);
             }
             else if (currOperator == '*')
             {
-                *result = (*operand1) * (*operand2);
+                res = (*operand1) * (*operand2);
             }
             else if (currOperator == '/')
             {
-                *result = (*operand2) / (*operand1);
+                if ((*operand1) == 0)
+                {
+                    cout << "ERROR: Divide by zero" << endl;
+                    delete operand1;
+                    delete operand2;
+                    return;
+                }
+                res = (*operand2) / (*operand1);
             }
             delete operand1;
             delete operand2;
+            int *result = new int(0);
+            *result = res;
             operandStack.insertFront(result);
         }
     }
     int *finalResult = operandStack.removeFront();
+    if (!operandStack.isEmpty())
+    {
+        cout << "ERROR: Too many operands" << endl;
+        delete finalResult;
+        return;
+    }
     cout << *finalResult << endl;
     delete finalResult;
 }
@@ -173,6 +199,7 @@ void getRPN()
                 else
                 {
                     cout << "ERROR: Parenthesis mismatch" << endl;
+                    return;
                 }
             }
         }

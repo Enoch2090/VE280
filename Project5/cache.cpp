@@ -96,8 +96,8 @@ int LRUCache::read(int address)
       }
       this->cache.insertFront(newBlock);
       cur_cache_size++;
-      delete addrIn;
     }
+    delete addrIn;
   }
   return data;
 }
@@ -111,6 +111,7 @@ void LRUCache::write(int address, int data)
   }
   else
   {
+
     block *addrIn = new block;
     addrIn->address = address;
     block *blockFound;
@@ -158,7 +159,7 @@ void LRUCache::printMem()
   cout << endl;
 }
 
-int main()
+void LRUStart()
 {
   int CACHESIZE;
   int MEMSIZE;
@@ -178,6 +179,7 @@ int main()
     is.clear();
     is.str(temp);
     is >> INSTRUCTION;
+    //cout << INSTRUCTION << endl;
     try
     {
       if (INSTRUCTION == "READ")
@@ -260,5 +262,10 @@ int main()
       continue;
     }
   }
+}
+
+int main()
+{
+  LRUStart();
   return 0;
 }

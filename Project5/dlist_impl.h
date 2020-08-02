@@ -197,6 +197,7 @@ Dlist<T> &Dlist<T>::operator=(const Dlist<T> &l)
         this->insertBack(newop);
         current = current->next;
     }
+    return (*this);
 }
 
 template <class T>

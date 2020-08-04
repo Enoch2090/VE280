@@ -6,10 +6,12 @@ using namespace std;
 
 // ----------Utilities----------
 char topOfChar(Dlist<char> &operatorStack)
+// REQUIRES: operatorStack a Dlist of char
+// EFFECTS: return the top of the stack.
 {
     if (operatorStack.isEmpty())
     {
-        return 'N';
+        return '\n';
     }
     char *topChar = operatorStack.removeFront();
     operatorStack.insertFront(topChar);
@@ -17,6 +19,8 @@ char topOfChar(Dlist<char> &operatorStack)
 }
 
 void popChar(Dlist<char> &operatorStack, ostringstream &os)
+// REQUIRES: operatorStack a Dlist of char
+// EFFECTS: pop the top of the stack.
 {
     char *popedOperator = operatorStack.removeFront();
     char temp = *popedOperator;
@@ -25,6 +29,8 @@ void popChar(Dlist<char> &operatorStack, ostringstream &os)
 }
 
 int topOfInt(Dlist<int> &operandStack)
+// REQUIRES: operatorStack a Dlist of int
+// EFFECTS: return the top of the stack.
 {
     if (operandStack.isEmpty())
     {
@@ -36,6 +42,8 @@ int topOfInt(Dlist<int> &operandStack)
 }
 
 void popInt(Dlist<int> &operandStack, ostringstream &os)
+// REQUIRES: operatorStack a Dlist of int
+// EFFECTS: pop the top of the stack.
 {
     int *popedOperator = operandStack.removeFront();
     int temp = *popedOperator;
@@ -44,6 +52,8 @@ void popInt(Dlist<int> &operandStack, ostringstream &os)
 }
 
 bool hasGTPrecedence(const char &op1, const char &op2)
+// REQUIRES: op1, op2 2 chars of operators
+// EFFECTS: check whether op1 has greater precedence.
 {
     return ((op2 == '+' || op2 == '-') ? (!(op1 == '+' || op1 == '-')) : (false));
     // (op2 == + or -) => (op1 == + or -) then equal prec, otherwise op1 has gt prec.
@@ -51,173 +61,210 @@ bool hasGTPrecedence(const char &op1, const char &op2)
 }
 
 bool hasEQPrecedence(const char &op1, const char &op2)
+// REQUIRES: op1, op2 2 chars of operators
+// EFFECTS: check whether they have equal precedence.
 {
     return ((op2 == '+' || op2 == '-') ? (op1 == '+' || op1 == '-') : (op1 == '*' || op1 == '/'));
 }
 // ----------Operations----------
 
 void getVAL(string expression)
+// EFFECTS: evaluates the RPN exp and print the value
 {
-    istringstream exp;
-    exp.str(expression);
-    string peeked;
-    int currOperand;
-    char currOperator;
-    Dlist<int> operandStack;
-    while (exp.peek() != EOF)
+    try
     {
-        peeked = exp.peek();
-        if (peeked != "+" && peeked != "-" && peeked != "*" && peeked != "/" && peeked != "(" && peeked != ")" && peeked != " ")
+        istringstream exp;
+        exp.str(expression);
+        string peeked;
+        int currOperand;
+        char currOperator;
+        Dlist<int> operandStack;
+        while (exp.peek() != EOF)
         {
-            exp >> currOperand;
-            exp.get();
-            int *newOperand = new int(currOperand);
-            operandStack.insertFront(newOperand);
-        }
-        else if (peeked == " ")
-        {
-            exp.get();
-        }
-        else
-        {
-            exp >> currOperator;
-            exp.get();
-            if (operandStack.isEmpty())
+            peeked = exp.peek();
+            if (peeked != "+" && peeked != "-" && peeked != "*" && peeked != "/" && peeked != "(" && peeked != ")" && peeked != " ")
             {
-                cout << "ERROR: Not enough operands" << endl;
-                return;
+                exp >> currOperand;
+                exp.get();
+                int *newOperand = new int(currOperand);
+                operandStack.insertFront(newOperand);
             }
-            int *operand1 = operandStack.removeFront();
-            if (operandStack.isEmpty())
+            else if (peeked == " ")
             {
-                cout << "ERROR: Not enough operands" << endl;
-                delete operand1;
-                return;
+                exp.get(); // Clean possible spaces
             }
-            int *operand2 = operandStack.removeFront();
-            int res = 0;
-            if (currOperator == '+')
+            else
             {
-                res = (*operand1) + (*operand2);
-            }
-            else if (currOperator == '-')
-            {
-                res = (*operand2) - (*operand1);
-            }
-            else if (currOperator == '*')
-            {
-                res = (*operand1) * (*operand2);
-            }
-            else if (currOperator == '/')
-            {
-                if ((*operand1) == 0)
+                exp >> currOperator;
+                exp.get();
+                if (operandStack.isEmpty())
                 {
-                    cout << "ERROR: Divide by zero" << endl;
-                    delete operand1;
-                    delete operand2;
+                    cout << "ERROR: Not enough operands" << endl;
                     return;
                 }
-                res = (*operand2) / (*operand1);
+                int *operand1 = operandStack.removeFront();
+                if (operandStack.isEmpty())
+                {
+                    cout << "ERROR: Not enough operands" << endl;
+                    delete operand1;
+                    return;
+                }
+                int *operand2 = operandStack.removeFront();
+                int res = 0;
+                if (currOperator == '+')
+                {
+                    res = (*operand1) + (*operand2);
+                }
+                else if (currOperator == '-')
+                {
+                    res = (*operand2) - (*operand1);
+                }
+                else if (currOperator == '*')
+                {
+                    res = (*operand1) * (*operand2);
+                }
+                else if (currOperator == '/')
+                {
+                    if ((*operand1) == 0)
+                    {
+                        cout << "ERROR: Divide by zero" << endl;
+                        delete operand1;
+                        delete operand2;
+                        return;
+                    }
+                    res = (*operand2) / (*operand1);
+                }
+                delete operand1;
+                delete operand2;
+                int *result = new int(0);
+                *result = res;
+                operandStack.insertFront(result);
             }
-            delete operand1;
-            delete operand2;
-            int *result = new int(0);
-            *result = res;
-            operandStack.insertFront(result);
         }
-    }
-    int *finalResult = operandStack.removeFront();
-    if (!operandStack.isEmpty())
-    {
-        cout << "ERROR: Too many operands" << endl;
+        int *finalResult = operandStack.removeFront();
+        if (!operandStack.isEmpty())
+        {
+            cout << "ERROR: Too many operands" << endl;
+            delete finalResult;
+            return;
+        }
+        cout << *finalResult << endl;
         delete finalResult;
-        return;
     }
-    cout << *finalResult << endl;
-    delete finalResult;
+    catch (emptyList e)
+    {
+        throw e;
+    }
 }
 
 void getRPN()
+// EFFECTS: get the RPN string and call getVAL()
 {
-    string input = "";
-    getline(cin, input);
-    istringstream is;
-    ostringstream os;
-    is.str(input);
-    string peeked;
-    int currOperand;
-    char currOperator;
-    Dlist<char> operatorStack;
-    while (is.peek() != EOF)
+    try
     {
-        peeked = is.peek();
-        if (peeked != "+" && peeked != "-" && peeked != "*" && peeked != "/" && peeked != "(" && peeked != ")" && peeked != " ")
+        string input = "";
+        getline(cin, input);
+        istringstream is;
+        ostringstream os;
+        is.str(input);
+        string peeked;
+        int currOperand = 0;
+        char currOperator;
+        Dlist<char> operatorStack;
+        bool emptyIn = true;
+        int lParenthesis = 0;
+        int rParenthesis = 0;
+        while (is.peek() != EOF)
         {
-            // Not operators, then it's a operand.
-            is >> currOperand;
-            is.get();
-            os << currOperand << " ";
-            //cout << currOperand << " isNUM" << endl;
-        }
-        else if (peeked == " ")
-        {
+            peeked = is.peek();
+            if (peeked != "+" && peeked != "-" && peeked != "*" && peeked != "/" && peeked != "(" && peeked != ")" && peeked != " ")
+            {
+                // Not operators, then it's a operand.
+                is >> currOperand;
+                is.get();
+                os << currOperand << " ";
+                //cout << currOperand << " isNUM" << endl;
+            }
+            else if (peeked == " ")
+            {
 
-            is.get();
+                is.get();
+            }
+            else // An operator
+            {
+                is >> currOperator;
+                is.get();
+                //cout << currOperator << " isOP" << endl;
+                if (currOperator != '(' && currOperator != ')')
+                {
+                    while ((!operatorStack.isEmpty()) ? ((((hasGTPrecedence(topOfChar(operatorStack), currOperator)) || (hasEQPrecedence(topOfChar(operatorStack), currOperator))) && topOfChar(operatorStack) != '(')) : false)
+                    {
+                        popChar(operatorStack, os);
+                    }
+                    char *newOperator = new char;
+                    *newOperator = currOperator;
+                    operatorStack.insertFront(newOperator);
+                }
+                else if (currOperator == '(')
+                {
+                    char *newOperator = new char;
+                    *newOperator = currOperator;
+                    operatorStack.insertFront(newOperator);
+                    lParenthesis++; // lP must match with rP at the end
+                }
+                else if (currOperator == ')')
+                {
+                    rParenthesis++;
+                    while ((!operatorStack.isEmpty()) ? topOfChar(operatorStack) != '(' : false)
+                    {
+                        popChar(operatorStack, os);
+                    }
+                    if ((!operatorStack.isEmpty()) ? topOfChar(operatorStack) == '(' : false)
+                    {
+                        char *popedOperator = operatorStack.removeFront();
+                        delete popedOperator;
+                    }
+                    else
+                    {
+                        cout << "ERROR: Parenthesis mismatch" << endl;
+                        return;
+                    }
+                }
+            }
+            emptyIn = false;
         }
-        else // An operator
+        while (!operatorStack.isEmpty())
         {
-            is >> currOperator;
-            is.get();
-            //cout << currOperator << " isOP" << endl;
-            if (currOperator != '(' && currOperator != ')')
-            {
-                while ((!operatorStack.isEmpty()) ? ((((hasGTPrecedence(topOfChar(operatorStack), currOperator)) || (hasEQPrecedence(topOfChar(operatorStack), currOperator))) && topOfChar(operatorStack) != '(')) : false)
-                {
-                    popChar(operatorStack, os);
-                }
-                char *newOperator = new char;
-                *newOperator = currOperator;
-                operatorStack.insertFront(newOperator);
-            }
-            else if (currOperator == '(')
-            {
-                char *newOperator = new char;
-                *newOperator = currOperator;
-                operatorStack.insertFront(newOperator);
-            }
-            else if (currOperator == ')')
-            {
-                while ((!operatorStack.isEmpty()) ? topOfChar(operatorStack) != '(' : false)
-                {
-                    popChar(operatorStack, os);
-                }
-                if ((!operatorStack.isEmpty()) ? topOfChar(operatorStack) == '(' : false)
-                {
-                    char *popedOperator = operatorStack.removeFront();
-                    delete popedOperator;
-                }
-                else
-                {
-                    cout << "ERROR: Parenthesis mismatch" << endl;
-                    return;
-                }
-            }
+            popChar(operatorStack, os);
         }
-        // if (!operatorStack.isEmpty())
-        // {
-        //     cout << topOfChar(operatorStack) << endl;
-        // }
+        if (lParenthesis != rParenthesis)
+        {
+            cout << "ERROR: Parenthesis mismatch" << endl; // Deal with more lParenthesis
+            return;
+        }
+        if (emptyIn)
+        {
+            cout << "ERROR: Not enough operands" << endl;
+            return;
+        }
+        cout << os.str() << endl;
+        getVAL(os.str());
     }
-    while (!operatorStack.isEmpty())
+    catch (emptyList e)
     {
-        popChar(operatorStack, os);
+        throw e;
     }
-    cout << os.str() << endl;
-    getVAL(os.str());
 }
 
 int main()
 {
-    getRPN();
+    try
+    {
+        getRPN();
+    }
+    catch (emptyList e)
+    {
+        return 0;
+    }
     return 0;
 }

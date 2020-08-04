@@ -159,7 +159,21 @@ void LRUCache::printMem()
   cout << endl;
 }
 
+bool isEmpty(istringstream &is)
+// REQUIRES: is an istringstream
+// EFFECTS: clean the leading space in is, and return whether it's empty after cleaning
+{
+  string peeked;
+  peeked = is.peek();
+  if (peeked == " ")
+  {
+    is.get();
+  }
+  return is.peek() == EOF;
+}
+
 void LRUStart()
+// EFFECTS: start a LRUcache using cin parameters
 {
   int CACHESIZE;
   int MEMSIZE;
@@ -179,6 +193,7 @@ void LRUStart()
     is.clear();
     is.str(temp);
     is >> INSTRUCTION;
+    string peeked;
     //cout << INSTRUCTION << endl;
     try
     {
@@ -186,7 +201,7 @@ void LRUStart()
       {
         if (is >> address)
         {
-          if (is.peek() != EOF)
+          if (!isEmpty(is))
           {
             cout << "ERROR: Too many operands" << endl;
           }
@@ -205,7 +220,7 @@ void LRUStart()
       {
         if (is >> address && is >> data)
         {
-          if (is.peek() != EOF)
+          if (!isEmpty(is))
           {
             cout << "ERROR: Too many operands" << endl;
           }
@@ -221,7 +236,7 @@ void LRUStart()
       }
       else if (INSTRUCTION == "PRINTCACHE")
       {
-        if (is.peek() != EOF)
+        if (!isEmpty(is))
         {
           cout << "ERROR: Too many operands" << endl;
         }
@@ -232,7 +247,7 @@ void LRUStart()
       }
       else if (INSTRUCTION == "PRINTMEM")
       {
-        if (is.peek() != EOF)
+        if (!isEmpty(is))
         {
           cout << "ERROR: Too many operands" << endl;
         }
@@ -243,7 +258,7 @@ void LRUStart()
       }
       else if (INSTRUCTION == "EXIT")
       {
-        if (is.peek() != EOF)
+        if (!isEmpty(is))
         {
           cout << "ERROR: Too many operands" << endl;
         }
@@ -258,6 +273,10 @@ void LRUStart()
       }
     }
     catch (int a)
+    {
+      continue;
+    }
+    catch (emptyList e)
     {
       continue;
     }
